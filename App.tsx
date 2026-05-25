@@ -1,20 +1,47 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { NavigationContainer }
+from "@react-navigation/native";
 
-export default function App() {
+import {
+  AuthProvider,
+  useAuth,
+}
+from "./src/context/AuthContext";
+
+import AuthStack
+from "./src/navigation/AuthStack";
+
+import MainTabs
+from "./src/navigation/MainTabs";
+
+import {
+  TasksProvider,
+} from "./src/context/TasksContext";
+
+
+function Routes() {
+
+  const {
+    isAuthenticated,
+    loading,
+  } = useAuth();
+
+  if (loading) return null;
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+       {isAuthenticated
+        ? <MainTabs />
+        : <AuthStack />}
+    </NavigationContainer>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default function App() {
+  return (
+    <TasksProvider>
+      <AuthProvider>
+        <Routes />
+      </AuthProvider>
+    </TasksProvider>
+  );
+}

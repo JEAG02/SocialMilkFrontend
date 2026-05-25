@@ -1,0 +1,542 @@
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
+import Ionicons
+from "@expo/vector-icons/Ionicons";
+
+import {
+  useAuth,
+} from "../../context/AuthContext";
+
+export default function ProfileScreen({
+  navigation,
+}: any) {
+
+  const { logout } = useAuth();
+
+  return (
+    <ScrollView
+      style={styles.container}
+      showsVerticalScrollIndicator={false}
+    >
+
+      {/* HEADER */}
+
+      <View style={styles.header}>
+
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() =>
+            navigation.goBack()
+          }
+        >
+
+          <Ionicons
+            name="arrow-back"
+            size={24}
+            color="#111827"
+          />
+
+        </TouchableOpacity>
+
+        <Text style={styles.headerTitle}>
+          Mi Perfil
+        </Text>
+
+      </View>
+
+      {/* PROFILE CARD */}
+
+      <View style={styles.profileCard}>
+
+        <View style={styles.avatar}>
+
+          <Ionicons
+            name="person"
+            size={60}
+            color="#fff"
+          />
+
+        </View>
+
+        <Text style={styles.name}>
+          Juan Esteban
+        </Text>
+
+        <Text style={styles.role}>
+          Productor Ganadero
+        </Text>
+
+        <View style={styles.locationRow}>
+
+          <Ionicons
+            name="location"
+            size={18}
+            color="#64748b"
+          />
+
+          <Text style={styles.location}>
+            Manizales, Colombia
+          </Text>
+
+        </View>
+
+      </View>
+
+      {/* INFO */}
+
+      <View style={styles.infoCard}>
+
+        <Text style={styles.sectionTitle}>
+          Información Personal
+        </Text>
+
+        {/* EMAIL */}
+
+        <View style={styles.infoItem}>
+
+          <View style={styles.infoIcon}>
+
+            <Ionicons
+              name="mail"
+              size={22}
+              color="#3b82f6"
+            />
+
+          </View>
+
+          <View>
+
+            <Text style={styles.infoLabel}>
+              Correo electrónico
+            </Text>
+
+            <Text style={styles.infoValue}>
+              juan@email.com
+            </Text>
+
+          </View>
+
+        </View>
+
+        {/* PHONE */}
+
+        <View style={styles.infoItem}>
+
+          <View style={styles.infoIcon}>
+
+            <Ionicons
+              name="call"
+              size={22}
+              color="#16a34a"
+            />
+
+          </View>
+
+          <View>
+
+            <Text style={styles.infoLabel}>
+              Teléfono
+            </Text>
+
+            <Text style={styles.infoValue}>
+              +57 300 123 4567
+            </Text>
+
+          </View>
+
+        </View>
+
+      </View>
+
+      {/* STATS */}
+
+      <View style={styles.statsContainer}>
+
+        <View style={styles.statCard}>
+
+          <Text style={styles.statValue}>
+            24
+          </Text>
+
+          <Text style={styles.statLabel}>
+            Animales
+          </Text>
+
+        </View>
+
+        <View style={styles.statCard}>
+
+          <Text style={styles.statValue}>
+            450L
+          </Text>
+
+          <Text style={styles.statLabel}>
+            Producción
+          </Text>
+
+        </View>
+
+        <View style={styles.statCard}>
+
+          <Text style={styles.statValue}>
+            12
+          </Text>
+
+          <Text style={styles.statLabel}>
+            Ventas
+          </Text>
+
+        </View>
+
+      </View>
+
+      {/* SETTINGS */}
+
+      <View style={styles.settingsCard}>
+
+        <Text style={styles.sectionTitle}>
+          Opciones
+        </Text>
+
+        <TouchableOpacity
+          style={styles.optionItem}
+        >
+
+          <Ionicons
+            name="settings"
+            size={24}
+            color="#3b82f6"
+          />
+
+          <Text style={styles.optionText}>
+            Configuración
+          </Text>
+
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.optionItem}
+        >
+
+          <Ionicons
+            name="notifications"
+            size={24}
+            color="#f59e0b"
+          />
+
+          <Text style={styles.optionText}>
+            Notificaciones
+          </Text>
+
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.optionItem}
+        >
+
+          <Ionicons
+            name="shield-checkmark"
+            size={24}
+            color="#16a34a"
+          />
+
+          <Text style={styles.optionText}>
+            Seguridad
+          </Text>
+
+        </TouchableOpacity>
+
+      </View>
+
+      {/* LOGOUT */}
+
+      <TouchableOpacity
+        style={styles.logoutButton}
+        onPress={logout}
+      >
+
+        <Ionicons
+          name="log-out"
+          size={22}
+          color="#fff"
+        />
+
+        <Text style={styles.logoutText}>
+          Cerrar sesión
+        </Text>
+
+      </TouchableOpacity>
+
+      <View style={{ height: 50 }} />
+
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+
+  container: {
+    flex: 1,
+    backgroundColor: "#f1f5f9",
+  },
+
+  header: {
+
+    flexDirection: "row",
+    alignItems: "center",
+
+    paddingTop: 70,
+    paddingHorizontal: 22,
+    marginBottom: 20,
+  },
+
+  backButton: {
+
+    width: 48,
+    height: 48,
+
+    borderRadius: 16,
+
+    backgroundColor: "#fff",
+
+    justifyContent: "center",
+    alignItems: "center",
+
+    marginRight: 16,
+
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+
+    elevation: 3,
+  },
+
+  headerTitle: {
+    fontSize: 32,
+    fontWeight: "900",
+    color: "#111827",
+  },
+
+  profileCard: {
+
+    backgroundColor: "#fff",
+
+    marginHorizontal: 22,
+
+    borderRadius: 30,
+
+    padding: 28,
+
+    alignItems: "center",
+
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+
+    elevation: 3,
+  },
+
+  avatar: {
+
+    width: 120,
+    height: 120,
+
+    borderRadius: 60,
+
+    backgroundColor: "#16a34a",
+
+    justifyContent: "center",
+    alignItems: "center",
+
+    marginBottom: 20,
+  },
+
+  name: {
+    fontSize: 28,
+    fontWeight: "900",
+    color: "#111827",
+  },
+
+  role: {
+    color: "#16a34a",
+    fontWeight: "700",
+    marginTop: 6,
+    fontSize: 16,
+  },
+
+  locationRow: {
+
+    flexDirection: "row",
+    alignItems: "center",
+
+    marginTop: 14,
+  },
+
+  location: {
+    marginLeft: 6,
+    color: "#64748b",
+    fontWeight: "600",
+  },
+
+  infoCard: {
+
+    backgroundColor: "#fff",
+
+    marginHorizontal: 22,
+    marginTop: 18,
+
+    borderRadius: 30,
+
+    padding: 24,
+
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+
+    elevation: 3,
+  },
+
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: "900",
+    color: "#111827",
+    marginBottom: 24,
+  },
+
+  infoItem: {
+
+    flexDirection: "row",
+    alignItems: "center",
+
+    marginBottom: 24,
+  },
+
+  infoIcon: {
+
+    width: 54,
+    height: 54,
+
+    borderRadius: 18,
+
+    backgroundColor: "#f8fafc",
+
+    justifyContent: "center",
+    alignItems: "center",
+
+    marginRight: 16,
+  },
+
+  infoLabel: {
+    color: "#64748b",
+    fontSize: 14,
+  },
+
+  infoValue: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#111827",
+    marginTop: 4,
+  },
+
+  statsContainer: {
+
+    flexDirection: "row",
+    justifyContent: "space-between",
+
+    marginHorizontal: 22,
+    marginTop: 18,
+  },
+
+  statCard: {
+
+    width: "31%",
+
+    backgroundColor: "#fff",
+
+    borderRadius: 24,
+
+    paddingVertical: 24,
+
+    alignItems: "center",
+
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+
+    elevation: 3,
+  },
+
+  statValue: {
+    fontSize: 28,
+    fontWeight: "900",
+    color: "#111827",
+  },
+
+  statLabel: {
+    marginTop: 8,
+    color: "#64748b",
+    fontWeight: "700",
+  },
+
+  settingsCard: {
+
+    backgroundColor: "#fff",
+
+    marginHorizontal: 22,
+    marginTop: 18,
+
+    borderRadius: 30,
+
+    padding: 24,
+
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+
+    elevation: 3,
+  },
+
+  optionItem: {
+
+    flexDirection: "row",
+    alignItems: "center",
+
+    paddingVertical: 16,
+  },
+
+  optionText: {
+    marginLeft: 16,
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#111827",
+  },
+
+  logoutButton: {
+
+    backgroundColor: "#ef4444",
+
+    marginHorizontal: 22,
+    marginTop: 24,
+
+    borderRadius: 24,
+
+    paddingVertical: 18,
+
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  logoutText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "800",
+    marginLeft: 10,
+  },
+});
