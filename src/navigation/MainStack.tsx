@@ -14,6 +14,8 @@ import AnimalDetailsScreen from "../screens/animals/AnimalDetailsScreen";
 import CreateAnimalScreen from "../screens/animals/CreateAnimalScreen";
 import EditAnimalScreen from "../screens/animals/EditAnimalScreen";
 import createTaskScreen from "../screens/tasks/CreateTaskScreen";
+import productionDetailScreen from "../screens/production/ProductionDetailScreen";
+import UpdateProductionScreen from "../screens/production/UpdateProductionScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -34,6 +36,8 @@ export default function MainStack() {
       <Stack.Screen name="AnimalDetails" component={AnimalDetailsScreen} />
       <Stack.Screen name="CreateAnimal" component={CreateAnimalScreen} />
       <Stack.Screen name="EditAnimal" component={EditAnimalScreen} />
+      <Stack.Screen name="ProductionDetail" component={productionDetailScreen} />
+      <Stack.Screen name="UpdateProduction" component={UpdateProductionScreen} />
     </Stack.Navigator>
   );
 }

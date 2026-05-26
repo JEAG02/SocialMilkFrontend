@@ -1,4 +1,5 @@
 import {
+  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -7,10 +8,26 @@ import {
   View,
 } from "react-native";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+import AsyncStorage
+from "@react-native-async-storage/async-storage";
 
 import Ionicons
 from "@expo/vector-icons/Ionicons";
+
+import {
+  useAnimals,
+} from "../../context/AnimalsContext";
+
+import {
+  useFocusEffect,
+} from "@react-navigation/native";
+
+import React from "react";
+
+const API_URL =
+  "http://192.168.153.77:5264/api/v1/production";
 
 export default function ProductionScreen({
   navigation,
@@ -22,25 +39,217 @@ export default function ProductionScreen({
   const [shift, setShift]
     = useState("");
 
-  const [notes, setNotes]
-    = useState("");
+  const [
+    selectedAnimal,
+    setSelectedAnimal,
+  ] = useState("");
 
-  const productions = [
-    {
-      id: 1,
-      liters: "450 L",
-      shift: "Mañana",
-      date: "Hoy",
-    },
-    {
-      id: 2,
-      liters: "390 L",
-      shift: "Tarde",
-      date: "Ayer",
-    },
-  ];
+  const { animals } =
+    useAnimals();
+
+  const [
+    productions,
+    setProductions,
+  ] = useState<any[]>([]);
+
+  const [summary, setSummary] =
+  useState<any>(null);
+
+const [summaryPeriod,
+  setSummaryPeriod] =
+  useState("daily");
+
+  const [loading, setLoading]
+    = useState(false);
+
+  // =========================
+  // LOAD PRODUCTIONS
+  // =========================
+
+  const loadProductions =
+    async () => {
+
+    try {
+
+      const profileId =
+        await AsyncStorage.getItem(
+          "profileId"
+        );
+
+      if (!profileId) return;
+
+      const response =
+        await fetch(
+          `${API_URL}?ownerId=${profileId}`
+        );
+
+      if (!response.ok) {
+
+        throw new Error(
+          "Error cargando producción"
+        );
+      }
+
+      const data =
+        await response.json();
+
+      setProductions(data);
+
+    } catch (error) {
+
+      console.log(error);
+    }
+  };
+
+  useFocusEffect(
+
+  React.useCallback(() => {
+
+    loadProductions();
+
+  }, [])
+);
+
+  // =========================
+// LOAD SUMMARY
+// =========================
+
+const loadSummary =
+  async (
+    animalId: string,
+    period: string
+  ) => {
+
+  try {
+
+    const response =
+      await fetch(
+        `${API_URL}/summary?animalId=${animalId}&period=${period}`
+      );
+
+    if (!response.ok) {
+
+      throw new Error(
+        "Error cargando summary"
+      );
+    }
+
+    const data =
+      await response.json();
+
+    setSummary(data);
+
+  } catch (error) {
+
+    console.log(error);
+  }
+};
+  // =========================
+  // CREATE PRODUCTION
+  // =========================
+
+  const handleCreate =
+    async () => {
+
+    try {
+
+      if (
+        !liters ||
+        !shift.trim() ||
+        !selectedAnimal
+      ) {
+
+        Alert.alert(
+          "Error",
+          "Completa todos los campos."
+        );
+
+        return;
+      }
+
+      setLoading(true);
+
+      const profileId =
+        await AsyncStorage.getItem(
+          "profileId"
+        );
+
+      if (!profileId) {
+
+        throw new Error(
+          "No existe profileId"
+        );
+      }
+
+      const response =
+        await fetch(
+          API_URL,
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body: JSON.stringify({
+
+              ownerId: profileId,
+
+              animalId:
+                selectedAnimal,
+
+              productionDate:
+                new Date().toISOString(),
+
+              milkVolumeLiters:
+                Number(liters),
+
+              shift,
+            }),
+          }
+        );
+
+      if (!response.ok) {
+
+        const error =
+          await response.text();
+
+        console.log(error);
+
+        throw new Error(
+          "Error creando producción"
+        );
+      }
+
+      Alert.alert(
+        "Éxito",
+        "Producción registrada."
+      );
+
+      setLiters("");
+      setShift("");
+      setSelectedAnimal("");
+
+      await loadProductions();
+
+    } catch (error) {
+
+      console.log(error);
+
+      Alert.alert(
+        "Error",
+        "No se pudo registrar."
+      );
+
+    } finally {
+
+      setLoading(false);
+    }
+  };
 
   return (
+
     <ScrollView
       style={styles.container}
       showsVerticalScrollIndicator={false}
@@ -50,58 +259,58 @@ export default function ProductionScreen({
 
       <View style={styles.header}>
 
-  {/* LEFT */}
+        {/* LEFT */}
 
-  <View
-    style={{
-      flexDirection: "row",
-      alignItems: "center",
-      flex: 1,
-    }}
-  >
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            flex: 1,
+          }}
+        >
 
-    <TouchableOpacity
-      onPress={() =>
-        navigation.goBack()
-      }
-      style={styles.backButton}
-    >
+          <TouchableOpacity
+            onPress={() =>
+              navigation.goBack()
+            }
+            style={styles.backButton}
+          >
 
-      <Ionicons
-        name="arrow-back"
-        size={24}
-        color="#111827"
-      />
+            <Ionicons
+              name="arrow-back"
+              size={24}
+              color="#111827"
+            />
 
-    </TouchableOpacity>
+          </TouchableOpacity>
 
-    <View>
+          <View>
 
-      <Text style={styles.subtitle}>
-        Registro diario
-      </Text>
+            <Text style={styles.subtitle}>
+              Registro diario
+            </Text>
 
-      <Text style={styles.title}>
-        Producción
-      </Text>
+            <Text style={styles.title}>
+              Producción
+            </Text>
 
-    </View>
+          </View>
 
-  </View>
+        </View>
 
-  {/* RIGHT */}
+        {/* RIGHT */}
 
-  <View style={styles.headerIcon}>
+        <View style={styles.headerIcon}>
 
-    <Ionicons
-      name="water"
-      size={28}
-      color="#fff"
-    />
+          <Ionicons
+            name="water"
+            size={28}
+            color="#fff"
+          />
 
-  </View>
+        </View>
 
-</View>
+      </View>
 
       {/* FORM */}
 
@@ -126,6 +335,73 @@ export default function ProductionScreen({
           style={styles.input}
         />
 
+        {/* ANIMAL */}
+
+        <Text style={styles.label}>
+          Selecciona animal
+        </Text>
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={{ marginBottom: 20 }}
+        >
+
+          {animals.map((animal: any) => (
+
+            <TouchableOpacity
+              key={animal.animalId}
+              style={[
+                styles.animalCard,
+
+                selectedAnimal ===
+                  animal.animalId && {
+                    backgroundColor: "#3b82f6",
+                    borderColor: "#3b82f6",
+                  },
+              ]}
+              onPress={() => {
+
+  setSelectedAnimal(
+    animal.animalId
+  );
+
+  loadSummary(
+    animal.animalId,
+    summaryPeriod
+  );
+}}
+            >
+
+              <Ionicons
+                name="paw"
+                size={24}
+                color={
+                  selectedAnimal ===
+                  animal.animalId
+                    ? "#fff"
+                    : "#3b82f6"
+                }
+              />
+
+              <Text
+                style={[
+                  styles.animalText,
+
+                  selectedAnimal ===
+                    animal.animalId && {
+                      color: "#fff",
+                    },
+                ]}
+              >
+                {animal.animalName}
+              </Text>
+
+            </TouchableOpacity>
+          ))}
+
+        </ScrollView>
+
         {/* TURNO */}
 
         <Text style={styles.label}>
@@ -140,25 +416,12 @@ export default function ProductionScreen({
           style={styles.input}
         />
 
-        {/* OBSERVACIONES */}
-
-        <Text style={styles.label}>
-          Observaciones
-        </Text>
-
-        <TextInput
-          placeholder="Escribe observaciones..."
-          placeholderTextColor="#94a3b8"
-          value={notes}
-          onChangeText={setNotes}
-          multiline
-          style={styles.textArea}
-        />
-
         {/* BUTTON */}
 
         <TouchableOpacity
           style={styles.saveButton}
+          onPress={handleCreate}
+          disabled={loading}
         >
 
           <Ionicons
@@ -168,64 +431,197 @@ export default function ProductionScreen({
           />
 
           <Text style={styles.buttonText}>
-            Guardar producción
+            {
+              loading
+                ? "Guardando..."
+                : "Guardar producción"
+            }
           </Text>
 
         </TouchableOpacity>
 
       </View>
 
-      {/* HISTORIAL */}
+{/* SUMMARY */}
 
-      <View style={styles.historyContainer}>
+{!!selectedAnimal && (
 
-        <Text style={styles.historyTitle}>
-          Historial reciente
+<View style={styles.summaryCard}>
+
+  <Text style={styles.summaryTitle}>
+    Resumen producción
+  </Text>
+
+  {/* PERIODOS */}
+
+  <View style={styles.periodContainer}>
+
+    {["daily", "weekly", "monthly"]
+      .map((period) => (
+
+      <TouchableOpacity
+        key={period}
+        style={[
+
+          styles.periodButton,
+
+          summaryPeriod === period && {
+            backgroundColor:
+              "#3b82f6",
+          },
+        ]}
+        onPress={() => {
+
+          setSummaryPeriod(period);
+
+          loadSummary(
+            selectedAnimal,
+            period
+          );
+        }}
+      >
+
+        <Text
+          style={[
+
+            styles.periodText,
+
+            summaryPeriod === period && {
+              color: "#fff",
+            },
+          ]}
+        >
+          {
+            period === "daily"
+              ? "Diario"
+              : period === "weekly"
+              ? "Semanal"
+              : "Mensual"
+          }
         </Text>
 
-        {productions.map((item) => (
+      </TouchableOpacity>
+    ))}
 
-          <View
-            key={item.id}
-            style={styles.productionCard}
+  </View>
+
+  {/* DATA */}
+
+  {summary && (
+
+    <View
+      style={styles.summaryData}
+    >
+
+      <Text style={styles.summaryValue}>
+        {
+          summary.totalMilkVolume
+        } L
+      </Text>
+
+      <Text style={styles.summaryLabel}>
+        Producción total
+      </Text>
+
+    </View>
+  )}
+
+</View>
+)}
+      {/* HISTORIAL */}
+
+<View style={styles.historyContainer}>
+
+  <Text style={styles.historyTitle}>
+    Historial reciente
+  </Text>
+
+  {productions.map((item) => {
+
+    const animal =
+      animals.find(
+        (a: any) =>
+          a.animalId === item.animalId
+      );
+
+    return (
+
+      <TouchableOpacity
+        key={item.productionId}
+        style={styles.productionCard}
+        onPress={() =>
+          navigation.navigate(
+            "ProductionDetail",
+            {
+              productionId:
+                item.productionId,
+            }
+          )
+        }
+      >
+
+        <View
+          style={styles.productionIcon}
+        >
+
+          <Ionicons
+            name="water-outline"
+            size={26}
+            color="#3b82f6"
+          />
+
+        </View>
+
+        <View style={{ flex: 1 }}>
+
+          {/* LITROS */}
+
+          <Text
+            style={styles.productionLiters}
           >
+            {
+              item.milkVolumeLiters
+            } L
+          </Text>
 
-            <View
-              style={styles.productionIcon}
-            >
+          {/* NOMBRE ANIMAL */}
 
-              <Ionicons
-                name="water-outline"
-                size={26}
-                color="#3b82f6"
-              />
+          <Text
+            style={styles.productionAnimal}
+          >
+            🐄 {
+              animal?.animalName ||
+              "Animal desconocido"
+            }
+          </Text>
 
-            </View>
+          {/* TURNO */}
 
-            <View style={{ flex: 1 }}>
+          <Text
+            style={styles.productionInfo}
+          >
+            Turno {item.shift}
+          </Text>
 
-              <Text
-                style={styles.productionLiters}
-              >
-                {item.liters}
-              </Text>
+          {/* FECHA */}
 
-              <Text
-                style={styles.productionInfo}
-              >
-                Turno {item.shift}
-              </Text>
+          <Text
+            style={styles.productionDate}
+          >
+            {
+              new Date(
+                item.productionDate
+              ).toLocaleDateString()
+            }
+          </Text>
 
-            </View>
+        </View>
 
-            <Text style={styles.date}>
-              {item.date}
-            </Text>
+      </TouchableOpacity>
+    );
+  })}
 
-          </View>
-        ))}
-
-      </View>
+</View>
 
       <View style={{ height: 50 }} />
 
@@ -281,21 +677,22 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+
   backButton: {
 
-  width: 48,
-  height: 48,
+    width: 48,
+    height: 48,
 
-  borderRadius: 16,
+    borderRadius: 16,
 
-  backgroundColor:
-    "rgba(255,255,255,0.92)",
+    backgroundColor:
+      "rgba(255,255,255,0.92)",
 
-  justifyContent: "center",
-  alignItems: "center",
+    justifyContent: "center",
+    alignItems: "center",
 
-  marginRight: 16,
-},
+    marginRight: 16,
+  },
 
   formCard: {
 
@@ -344,25 +741,30 @@ const styles = StyleSheet.create({
     borderColor: "#e2e8f0",
   },
 
-  textArea: {
+  animalCard: {
 
-    backgroundColor: "#f8fafc",
+    backgroundColor: "#fff",
+
+    borderWidth: 2,
+    borderColor: "#dbeafe",
 
     borderRadius: 18,
 
+    paddingVertical: 14,
     paddingHorizontal: 18,
-    paddingVertical: 16,
 
-    height: 120,
+    alignItems: "center",
 
-    textAlignVertical: "top",
+    marginRight: 14,
+  },
 
-    marginBottom: 24,
+  animalText: {
 
-    fontSize: 15,
+    marginTop: 8,
 
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
+    color: "#1e3a8a",
+
+    fontWeight: "700",
   },
 
   saveButton: {
@@ -437,15 +839,92 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     color: "#111827",
   },
+  productionAnimal: {
+  marginTop: 6,
+  fontSize: 15,
+  fontWeight: "700",
+  color: "#1e293b",
+},
+
+productionDate: {
+  marginTop: 4,
+  color: "#94a3b8",
+  fontSize: 13,
+},
 
   productionInfo: {
     marginTop: 4,
     color: "#64748b",
     fontWeight: "600",
   },
+  summaryCard: {
 
-  date: {
-    color: "#94a3b8",
-    fontWeight: "700",
-  },
+  backgroundColor: "#fff",
+
+  marginTop: 20,
+
+  borderRadius: 24,
+
+  padding: 20,
+},
+
+summaryTitle: {
+  fontSize: 20,
+  fontWeight: "800",
+  color: "#111827",
+  marginBottom: 18,
+},
+
+periodContainer: {
+
+  flexDirection: "row",
+
+  justifyContent: "space-between",
+
+  marginBottom: 20,
+},
+
+periodButton: {
+
+  flex: 1,
+
+  paddingVertical: 12,
+
+  borderRadius: 14,
+
+  backgroundColor: "#eff6ff",
+
+  marginHorizontal: 4,
+
+  alignItems: "center",
+},
+
+periodText: {
+
+  color: "#3b82f6",
+
+  fontWeight: "700",
+},
+
+summaryData: {
+  alignItems: "center",
+},
+
+summaryValue: {
+
+  fontSize: 42,
+
+  fontWeight: "900",
+
+  color: "#3b82f6",
+},
+
+summaryLabel: {
+
+  marginTop: 6,
+
+  color: "#64748b",
+
+  fontWeight: "600",
+},
 });

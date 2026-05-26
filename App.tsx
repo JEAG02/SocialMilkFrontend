@@ -17,6 +17,12 @@ import {
   TasksProvider,
 } from "./src/context/TasksContext";
 
+import {AnimalsProvider,}
+from "./src/context/AnimalsContext";
+
+// =========================
+// ROUTES
+// =========================
 
 function Routes() {
 
@@ -28,20 +34,37 @@ function Routes() {
   if (loading) return null;
 
   return (
+
     <NavigationContainer>
-       {isAuthenticated
+
+      {isAuthenticated
         ? <MainTabs />
         : <AuthStack />}
+
     </NavigationContainer>
   );
 }
 
+// =========================
+// APP
+// =========================
+
 export default function App() {
+
   return (
-    <TasksProvider>
-      <AuthProvider>
-        <Routes />
-      </AuthProvider>
-    </TasksProvider>
+
+    <AnimalsProvider>
+
+      <TasksProvider>
+
+        <AuthProvider>
+
+          <Routes />
+
+        </AuthProvider>
+
+      </TasksProvider>
+
+    </AnimalsProvider>
   );
 }

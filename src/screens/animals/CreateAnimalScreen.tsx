@@ -23,6 +23,10 @@ import {
 import AsyncStorage
 from "@react-native-async-storage/async-storage";
 
+import {
+  useAnimals,
+} from "../../context/AnimalsContext";
+
 export default function CreateAnimalScreen({
   navigation,
 }: any) {
@@ -45,30 +49,38 @@ export default function CreateAnimalScreen({
   const [loading, setLoading] =
     useState(false);
 
+  // 🔥 IMPORTANTE
+  const { loadAnimals } =
+    useAnimals();
+
   const handleCreate = async () => {
 
-  if (
-    !animalName ||
-    !animalType ||
-    !animalBreed ||
-    !animalStatus ||
-    !birthDate
-  ) {
-    return;
-  }
+    if (
+      !animalName ||
+      !animalType ||
+      !animalBreed ||
+      !animalStatus ||
+      !birthDate
+    ) {
 
-  try {
-
-    setLoading(true);
-
-    // 🔥 OBTENER OWNER ID
-
-    const profileId =
-      await AsyncStorage.getItem(
-        "profileId"
+      Alert.alert(
+        "Error",
+        "Completa todos los campos"
       );
-      
-    await createAnimal({
+
+      return;
+    }
+
+    try {
+
+      setLoading(true);
+
+      const profileId =
+        await AsyncStorage.getItem(
+          "profileId"
+        );
+
+      await createAnimal({
 
         ownerId: profileId,
 
@@ -77,72 +89,81 @@ export default function CreateAnimalScreen({
         animalBreed,
         animalStatus,
         birthDate,
-    });
-    Alert.alert(
-  "Éxito",
-  "Animal registrado correctamente",
-  [
-    {
-      text: "OK",
-      onPress: () =>
-        navigation.goBack(),
-    },
-  ]
-);
+      });
 
-// LIMPIAR INPUTS
+      // 🔥 ACTUALIZAR CONTEXTO
+      await loadAnimals();
 
-setAnimalName("");
-setAnimalType("");
-setAnimalBreed("");
-setAnimalStatus("");
-setBirthDate("");
+      Alert.alert(
+        "Éxito",
+        "Animal registrado correctamente",
+        [
+          {
+            text: "OK",
+            onPress: () =>
+              navigation.goBack(),
+          },
+        ]
+      );
+
+      // LIMPIAR INPUTS
+
+      setAnimalName("");
+      setAnimalType("");
+      setAnimalBreed("");
+      setAnimalStatus("");
+      setBirthDate("");
 
     } catch (error) {
 
-    console.log(error);
+      console.log(error);
+
+      Alert.alert(
+        "Error",
+        "No se pudo crear el animal"
+      );
 
     } finally {
 
-    setLoading(false);
+      setLoading(false);
     }
-};
+  };
 
-    return (
+  return (
 
     <ScrollView
-        style={styles.container}
-        showsVerticalScrollIndicator={false}
+      style={styles.container}
+      showsVerticalScrollIndicator={false}
     >
 
       {/* HEADER */}
 
-        <View style={styles.header}>
+      <View style={styles.header}>
 
         <TouchableOpacity
-        style={styles.backButton}
-        onPress={() =>
+          style={styles.backButton}
+          onPress={() =>
             navigation.goBack()
-        }
+          }
         >
 
-        <Ionicons
+          <Ionicons
             name="arrow-back"
             size={24}
             color="#111827"
-        />
+          />
 
         </TouchableOpacity>
 
         <View style={{ flex: 1 }}>
 
-        <Text style={styles.headerSubtitle}>
+          <Text style={styles.headerSubtitle}>
             Nuevo registro
-        </Text>
+          </Text>
 
-        <Text style={styles.headerTitle}>
+          <Text style={styles.headerTitle}>
             Crear Animal
-        </Text>
+          </Text>
 
         </View>
 
@@ -162,8 +183,6 @@ setBirthDate("");
 
       <View style={styles.form}>
 
-        {/* NOMBRE */}
-
         <Text style={styles.label}>
           Nombre del animal
         </Text>
@@ -175,8 +194,6 @@ setBirthDate("");
           value={animalName}
           onChangeText={setAnimalName}
         />
-
-        {/* TIPO */}
 
         <Text style={styles.label}>
           Tipo
@@ -190,8 +207,6 @@ setBirthDate("");
           onChangeText={setAnimalType}
         />
 
-        {/* RAZA */}
-
         <Text style={styles.label}>
           Raza
         </Text>
@@ -203,8 +218,6 @@ setBirthDate("");
           value={animalBreed}
           onChangeText={setAnimalBreed}
         />
-
-        {/* ESTADO */}
 
         <Text style={styles.label}>
           Estado
@@ -218,8 +231,6 @@ setBirthDate("");
           onChangeText={setAnimalStatus}
         />
 
-        {/* FECHA */}
-
         <Text style={styles.label}>
           Fecha nacimiento
         </Text>
@@ -232,23 +243,6 @@ setBirthDate("");
           onChangeText={setBirthDate}
         />
 
-        {/* IMAGEN FUTURA */}
-
-        <View style={styles.imagePlaceholder}>
-
-          <Ionicons
-            name="image-outline"
-            size={34}
-            color="#f59e0b"
-          />
-
-          <Text style={styles.imageText}>
-            Próximamente podrás subir
-            imágenes del animal
-          </Text>
-
-        </View>
-
         {/* BUTTON */}
 
         <TouchableOpacity
@@ -260,27 +254,27 @@ setBirthDate("");
           {loading ? (
 
             <View
-  style={{
-    flexDirection: "row",
-    alignItems: "center",
-  }}
->
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
 
-  <ActivityIndicator
-    color="#fff"
-  />
+              <ActivityIndicator
+                color="#fff"
+              />
 
-  <Text
-    style={{
-      color: "#fff",
-      marginLeft: 10,
-      fontWeight: "700",
-    }}
-  >
-    Registrando...
-  </Text>
+              <Text
+                style={{
+                  color: "#fff",
+                  marginLeft: 10,
+                  fontWeight: "700",
+                }}
+              >
+                Registrando...
+              </Text>
 
-</View>
+            </View>
 
           ) : (
 
@@ -404,35 +398,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
 
     elevation: 2,
-  },
-
-  imagePlaceholder: {
-
-    backgroundColor: "#fff",
-
-    borderRadius: 24,
-
-    padding: 28,
-
-    alignItems: "center",
-
-    marginTop: 16,
-    marginBottom: 28,
-
-    borderWidth: 2,
-    borderColor: "#fed7aa",
-    borderStyle: "dashed",
-  },
-
-  imageText: {
-
-    marginTop: 12,
-
-    textAlign: "center",
-
-    color: "#64748b",
-
-    lineHeight: 22,
   },
 
   button: {
