@@ -4,49 +4,274 @@ import {
   Text,
   TouchableOpacity,
   View,
+  TextInput,
+  Alert,
 } from "react-native";
+
+import {
+  useEffect,
+  useState,
+} from "react";
 
 import Ionicons
 from "@expo/vector-icons/Ionicons";
+
+import { useAuth } from "../../context/AuthContext";
+
+import {
+  getFeed,
+  createPost,
+  deletePost,
+  updatePost,
+  likePost,
+  dislikePost,
+} from "../../services/postService";
 
 export default function SocialScreen({
   navigation,
 }: any) {
 
-  const posts = [
-    {
-      id: 1,
-      user: "Carlos Gómez",
-      location: "Manizales",
-      text:
-        "Hoy aumentamos la producción en 12%. Excelente jornada 🚜",
-      likes: 24,
-      comments: 8,
-      time: "Hace 2h",
-    },
-    {
-      id: 2,
-      user: "María López",
-      location: "Pereira",
-      text:
-        "¿Qué alimento recomiendan para mejorar la producción lechera?",
-      likes: 18,
-      comments: 15,
-      time: "Hace 4h",
-    },
-    {
-      id: 3,
-      user: "Finca El Descanso",
-      location: "Armenia",
-      text:
-        "Vendemos concentrado premium para ganado. Excelente calidad.",
-      likes: 41,
-      comments: 12,
-      time: "Hace 7h",
-    },
-  ];
+  const {
+    isAuthenticated,
+    loading: authLoading,
+  } = useAuth();
+
+  const [posts, setPosts] =
+    useState<any[]>([]);
+
+  const [content, setContent] =
+    useState("");
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [
+    editingPostId,
+    setEditingPostId,
+  ] = useState<string | null>(
+    null
+  );
+
+  const [
+    editingContent,
+    setEditingContent,
+  ] = useState("");
+
+  // =========================
+  // LOAD POSTS
+  // =========================
+
+  const loadPosts =
+    async () => {
+
+    try {
+
+      const data =
+        await getFeed();
+
+      console.log(
+        "POSTS:",
+        data
+      );
+
+      setPosts(data);
+
+    } catch (error) {
+
+      console.log(error);
+    }
+  };
+
+  // =========================
+  // CREATE POST
+  // =========================
+
+  const handleCreatePost =
+    async () => {
+
+    try {
+
+      if (!content.trim()) {
+
+        Alert.alert(
+          "Error",
+          "Escribe algo"
+        );
+
+        return;
+      }
+
+      setLoading(true);
+
+      await createPost(
+        content
+      );
+
+      setContent("");
+
+      await loadPosts();
+
+    } catch (error) {
+
+      console.log(error);
+
+      Alert.alert(
+        "Error",
+        "No se pudo crear el post"
+      );
+
+    } finally {
+
+      setLoading(false);
+    }
+  };
+
+  // =========================
+  // UPDATE POST
+  // =========================
+
+  const handleUpdatePost =
+    async () => {
+
+    try {
+
+      if (
+        !editingContent.trim()
+      ) {
+
+        Alert.alert(
+          "Error",
+          "El contenido está vacío"
+        );
+
+        return;
+      }
+
+      await updatePost(
+        editingPostId!,
+        editingContent
+      );
+
+      setEditingPostId(
+        null
+      );
+
+      setEditingContent("");
+
+      await loadPosts();
+
+    } catch (error) {
+
+      console.log(error);
+
+      Alert.alert(
+        "Error",
+        "No se pudo actualizar"
+      );
+    }
+  };
+
+  // =========================
+  // DELETE POST
+  // =========================
+
+  const handleDeletePost =
+    async (
+      postId: string
+    ) => {
+
+    Alert.alert(
+      "Eliminar publicación",
+      "¿Deseas eliminar esta publicación?",
+      [
+
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+
+        {
+          text: "Eliminar",
+
+          style: "destructive",
+
+          onPress: async () => {
+
+            try {
+
+              await deletePost(
+                postId
+              );
+
+              await loadPosts();
+
+            } catch (error) {
+
+              console.log(error);
+
+              Alert.alert(
+                "Error",
+                "No se pudo eliminar"
+              );
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  // =========================
+// LIKE POST
+// =========================
+
+const handleLikePost =
+  async (postId: string) => {
+
+  try {
+
+    console.log(
+      "LIKE A:",
+      postId
+    );
+
+    const response =
+      await likePost(postId);
+
+    console.log(
+      "LIKE RESPONSE:",
+      response
+    );
+
+    await loadPosts();
+
+  } catch (error) {
+
+    console.log(error);
+
+    Alert.alert(
+      "Error",
+      "No se pudo dar like"
+    );
+  }
+};
+
+  useEffect(() => {
+
+    if (
+      !authLoading &&
+      isAuthenticated
+    ) {
+
+      loadPosts();
+    }
+
+  }, [
+    authLoading,
+    isAuthenticated,
+  ]);
 
   return (
+
     <ScrollView
       style={styles.container}
       showsVerticalScrollIndicator={false}
@@ -121,14 +346,27 @@ export default function SocialScreen({
 
           </View>
 
-          <Text style={styles.placeholder}>
-            Comparte algo con la comunidad...
-          </Text>
+          <TextInput
+            placeholder=
+              "Comparte algo con la comunidad..."
+
+            placeholderTextColor="#94a3b8"
+
+            value={content}
+
+            onChangeText={setContent}
+
+            multiline
+
+            style={styles.postInput}
+          />
 
         </View>
 
         <TouchableOpacity
           style={styles.postButton}
+          onPress={handleCreatePost}
+          disabled={loading}
         >
 
           <Ionicons
@@ -138,7 +376,11 @@ export default function SocialScreen({
           />
 
           <Text style={styles.postButtonText}>
-            Crear publicación
+            {
+              loading
+                ? "Publicando..."
+                : "Crear publicación"
+            }
           </Text>
 
         </TouchableOpacity>
@@ -151,10 +393,19 @@ export default function SocialScreen({
 
         {posts.map((post) => (
 
-          <View
-            key={post.id}
-            style={styles.postCard}
-          >
+          <TouchableOpacity
+  key={post.id}
+  style={styles.postCard}
+  activeOpacity={0.9}
+  onPress={() =>
+    navigation.navigate(
+      "PostDetail",
+      {
+        postId: post.id,
+      }
+    )
+  }
+>
 
             {/* TOP */}
 
@@ -172,35 +423,158 @@ export default function SocialScreen({
 
               <View style={{ flex: 1 }}>
 
-                <Text style={styles.user}>
-                  {post.user}
-                </Text>
+                <TouchableOpacity
+  onPress={() =>
+    navigation.navigate(
+      "UserProfile",
+      {
+        profileId: post.ownerId,
+      }
+    )
+  }
+>
+
+  <Text style={styles.user}>
+    Usuario
+  </Text>
+
+</TouchableOpacity>
 
                 <Text style={styles.location}>
-                  {post.location}
+                  {
+                    new Date(
+                      post.createdAt
+                    ).toLocaleDateString()
+                  }
                 </Text>
 
               </View>
 
-              <Text style={styles.time}>
-                {post.time}
-              </Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 16,
+                }}
+              >
+
+                <TouchableOpacity
+                  onPress={() => {
+
+                    setEditingPostId(
+                      post.id
+                    );
+
+                    setEditingContent(
+                      post.content
+                    );
+                  }}
+                >
+
+                  <Ionicons
+                    name="create-outline"
+                    size={22}
+                    color="#3b82f6"
+                  />
+
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() =>
+                    handleDeletePost(
+                      post.id
+                    )
+                  }
+                >
+
+                  <Ionicons
+                    name="trash-outline"
+                    size={22}
+                    color="#ef4444"
+                  />
+
+                </TouchableOpacity>
+
+              </View>
 
             </View>
 
             {/* CONTENT */}
 
-            <Text style={styles.postText}>
-              {post.text}
-            </Text>
+            {
+              editingPostId ===
+              post.id
+              ? (
+
+                <View>
+
+                  <TextInput
+                    value={
+                      editingContent
+                    }
+
+                    onChangeText={
+                      setEditingContent
+                    }
+
+                    multiline
+
+                    style={
+                      styles.editInput
+                    }
+                  />
+
+                  <TouchableOpacity
+                    style={
+                      styles.saveEditButton
+                    }
+
+                    onPress={
+                      handleUpdatePost
+                    }
+                  >
+
+                    <Ionicons
+                      name="save-outline"
+                      size={18}
+                      color="#fff"
+                    />
+
+                    <Text
+                      style={
+                        styles.saveEditText
+                      }
+                    >
+                      Guardar
+                    </Text>
+
+                  </TouchableOpacity>
+
+                </View>
+
+              ) : (
+
+                <Text
+                  style={
+                    styles.postText
+                  }
+                >
+                  {post.content}
+                </Text>
+
+              )
+            }
 
             {/* ACTIONS */}
 
             <View style={styles.actions}>
 
               <TouchableOpacity
-                style={styles.actionButton}
-              >
+  style={styles.actionButton}
+  onPress={() =>
+    handleLikePost(post.id)
+  }
+>
 
                 <Ionicons
                   name="heart-outline"
@@ -209,7 +583,9 @@ export default function SocialScreen({
                 />
 
                 <Text style={styles.actionText}>
-                  {post.likes}
+                  {
+                    post.likesCount || 0
+                  }
                 </Text>
 
               </TouchableOpacity>
@@ -225,7 +601,9 @@ export default function SocialScreen({
                 />
 
                 <Text style={styles.actionText}>
-                  {post.comments}
+                  {
+                    post.commentsCount || 0
+                  }
                 </Text>
 
               </TouchableOpacity>
@@ -248,7 +626,7 @@ export default function SocialScreen({
 
             </View>
 
-          </View>
+          </TouchableOpacity>
         ))}
 
       </View>
@@ -361,9 +739,14 @@ const styles = StyleSheet.create({
     marginRight: 14,
   },
 
-  placeholder: {
-    color: "#94a3b8",
+  postInput: {
+
+    flex: 1,
+
+    color: "#111827",
+
     fontSize: 16,
+
     fontWeight: "600",
   },
 
@@ -442,11 +825,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
-  time: {
-    color: "#94a3b8",
-    fontWeight: "700",
-  },
-
   postText: {
     fontSize: 16,
     lineHeight: 26,
@@ -476,5 +854,48 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontWeight: "700",
     color: "#475569",
+  },
+
+  editInput: {
+
+    backgroundColor: "#f8fafc",
+
+    borderRadius: 18,
+
+    padding: 16,
+
+    color: "#111827",
+
+    fontSize: 16,
+
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+
+    marginBottom: 14,
+  },
+
+  saveEditButton: {
+
+    backgroundColor: "#3b82f6",
+
+    borderRadius: 16,
+
+    paddingVertical: 14,
+
+    justifyContent: "center",
+    alignItems: "center",
+
+    flexDirection: "row",
+
+    marginBottom: 18,
+  },
+
+  saveEditText: {
+
+    color: "#fff",
+
+    fontWeight: "800",
+
+    marginLeft: 8,
   },
 });

@@ -1,15 +1,38 @@
-const API_URL =
-  "http://192.168.153.77:5264/api/v1/tasks";
+import AsyncStorage
+from "@react-native-async-storage/async-storage";
 
-export async function getTasks(
-  profileId: string
-) {
+import {
+  API_CONFIG
+} from "../config/api";
+
+const API_URL =
+  `${API_CONFIG.BASE_URL}${API_CONFIG.TASKS}`;
+
+export async function getTasks() {
+
+  const token =
+    await AsyncStorage.getItem(
+      "token"
+    );
+
+  console.log("[getTasks] Token:", token ? "✓ present" : "✗ missing");
+  console.log("[getTasks] URL:", API_URL);
 
   const response = await fetch(
-    `${API_URL}?profileId=${profileId}`
+    API_URL,
+    {
+      headers: {
+        Authorization:
+          `Bearer ${token}`,
+      },
+    }
   );
 
+  console.log("[getTasks] Status:", response.status, response.statusText);
+
   if (!response.ok) {
+    const errorText = await response.text();
+    console.log("[getTasks] Error response:", errorText);
     throw new Error(
       "Error obteniendo tareas"
     );
@@ -26,6 +49,11 @@ export async function createTask(
   task: any
 ) {
 
+  const token =
+    await AsyncStorage.getItem(
+      "token"
+    );
+
   const response = await fetch(
     API_URL,
     {
@@ -34,6 +62,9 @@ export async function createTask(
       headers: {
         "Content-Type":
           "application/json",
+
+        Authorization:
+          `Bearer ${token}`,
       },
 
       body: JSON.stringify(task),
@@ -64,6 +95,11 @@ export async function updateTaskStatus(
   status: number
 ) {
 
+  const token =
+    await AsyncStorage.getItem(
+      "token"
+    );
+
   const response = await fetch(
     `${API_URL}/${id}/status`,
     {
@@ -72,6 +108,9 @@ export async function updateTaskStatus(
       headers: {
         "Content-Type":
           "application/json",
+
+        Authorization:
+          `Bearer ${token}`,
       },
 
       body: JSON.stringify({
@@ -97,10 +136,20 @@ export async function deleteTask(
   id: string
 ) {
 
+  const token =
+    await AsyncStorage.getItem(
+      "token"
+    );
+
   const response = await fetch(
     `${API_URL}/${id}`,
     {
       method: "DELETE",
+
+      headers: {
+        Authorization:
+          `Bearer ${token}`,
+      },
     }
   );
 

@@ -1,8 +1,11 @@
 import AsyncStorage
 from "@react-native-async-storage/async-storage";
+import {
+  API_CONFIG
+} from "../config/api";
 
 const API_URL =
-  "http://192.168.153.77:5264/api/v1/animals";
+  `${API_CONFIG.BASE_URL}${API_CONFIG.ANIMALS}`;
 
 // =========================
 // GET ALL
@@ -15,13 +18,11 @@ export async function getAnimals() {
       "token"
     );
 
-  const profileId =
-    await AsyncStorage.getItem(
-      "profileId"
-    );
+  console.log("[getAnimals] Token:", token ? "✓ present" : "✗ missing");
+  console.log("[getAnimals] URL:", API_URL);
 
   const response = await fetch(
-    `${API_URL}?ownerId=${profileId}`,
+    API_URL,
     {
       headers: {
         Authorization:
@@ -30,8 +31,11 @@ export async function getAnimals() {
     }
   );
 
-  if (!response.ok) {
+  console.log("[getAnimals] Status:", response.status, response.statusText);
 
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.log("[getAnimals] Error response:", errorText);
     throw new Error(
       "Error obteniendo animales"
     );

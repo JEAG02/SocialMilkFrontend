@@ -57,16 +57,13 @@ export default function CreateTaskScreen({
 
       await createTask({
 
-  ownerId:
-    "GUID_DEL_USUARIO",
+        taskTitle: title,
 
-  taskTitle: title,
+        taskDescription:
+          description,
 
-  taskDescription:
-    description,
-
-  priority: 1,
-});
+        priority: 1,
+      });
 
       Alert.alert(
         "Éxito",

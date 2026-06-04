@@ -75,14 +75,7 @@ export default function CreateAnimalScreen({
 
       setLoading(true);
 
-      const profileId =
-        await AsyncStorage.getItem(
-          "profileId"
-        );
-
       await createAnimal({
-
-        ownerId: profileId,
 
         animalName,
         animalType,

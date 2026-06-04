@@ -16,6 +16,10 @@ import EditAnimalScreen from "../screens/animals/EditAnimalScreen";
 import createTaskScreen from "../screens/tasks/CreateTaskScreen";
 import productionDetailScreen from "../screens/production/ProductionDetailScreen";
 import UpdateProductionScreen from "../screens/production/UpdateProductionScreen";
+import salesDetailScreen from "../screens/sales/SaleDetailScreen";
+import updateSaleScreen from "../screens/sales/UpdateSaleScreen";
+import userProfileScreen from "../screens/social/UserProfileScreen";
+import postDetailScreen from "../screens/social/PostDetailScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -38,6 +42,10 @@ export default function MainStack() {
       <Stack.Screen name="EditAnimal" component={EditAnimalScreen} />
       <Stack.Screen name="ProductionDetail" component={productionDetailScreen} />
       <Stack.Screen name="UpdateProduction" component={UpdateProductionScreen} />
+      <Stack.Screen name="SaleDetail" component={salesDetailScreen} />
+      <Stack.Screen name="UpdateSale" component={updateSaleScreen} />
+      <Stack.Screen name="UserProfile" component={userProfileScreen} />
+      <Stack.Screen name="PostDetail" component={postDetailScreen} />
     </Stack.Navigator>
   );
 }

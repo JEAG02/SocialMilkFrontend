@@ -13,20 +13,20 @@ import {
   useState,
 } from "react";
 
+import AsyncStorage
+from "@react-native-async-storage/async-storage";
+
 import Ionicons
 from "@expo/vector-icons/Ionicons";
 
 import {
   getProductionById,
+  deleteProduction,
 } from "../../services/productionService";
 
 import {
   useAnimals,
 } from "../../context/AnimalsContext";
-
-import {
-  deleteProduction,
-} from "../../services/productionService";
 
 export default function ProductionDetailScreen({
   route,
@@ -47,65 +47,26 @@ export default function ProductionDetailScreen({
   const [loading, setLoading] =
     useState(true);
 
-  useEffect(() => {
-
-    loadProduction();
-
-  }, []);
-  const handleDelete =
-  async () => {
-
-  Alert.alert(
-    "Eliminar",
-    "¿Deseas eliminar esta producción?",
-    [
-
-      {
-        text: "Cancelar",
-        style: "cancel",
-      },
-
-      {
-        text: "Eliminar",
-
-        style: "destructive",
-
-        onPress: async () => {
-
-          try {
-
-            await deleteProduction(
-              production.productionId
-            );
-
-            Alert.alert(
-              "Éxito",
-              "Producción eliminada"
-            );
-
-            navigation.navigate(
-              "Production"
-            );
-
-          } catch (error) {
-
-            console.log(error);
-
-            Alert.alert(
-              "Error",
-              "No se pudo eliminar"
-            );
-          }
-        },
-      },
-    ]
-  );
-};
+  // =========================
+  // LOAD PRODUCTION
+  // =========================
 
   const loadProduction =
     async () => {
 
     try {
+
+      const token =
+        await AsyncStorage.getItem(
+          "token"
+        );
+
+      if (!token) {
+
+        throw new Error(
+          "Token no encontrado"
+        );
+      }
 
       const data =
         await getProductionById(
@@ -118,11 +79,92 @@ export default function ProductionDetailScreen({
 
       console.log(error);
 
+      Alert.alert(
+        "Error",
+        "No se pudo cargar la producción"
+      );
+
     } finally {
 
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+
+    loadProduction();
+
+  }, []);
+
+  // =========================
+  // DELETE PRODUCTION
+  // =========================
+
+  const handleDelete =
+    async () => {
+
+    Alert.alert(
+      "Eliminar",
+      "¿Deseas eliminar esta producción?",
+      [
+
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+
+        {
+          text: "Eliminar",
+
+          style: "destructive",
+
+          onPress: async () => {
+
+            try {
+
+              const token =
+                await AsyncStorage.getItem(
+                  "token"
+                );
+
+              if (!token) {
+
+                throw new Error(
+                  "Token no encontrado"
+                );
+              }
+
+              await deleteProduction(
+                production.productionId
+              );
+
+              Alert.alert(
+                "Éxito",
+                "Producción eliminada"
+              );
+
+              navigation.navigate(
+                "Production"
+              );
+
+            } catch (error) {
+
+              console.log(error);
+
+              Alert.alert(
+                "Error",
+                "No se pudo eliminar"
+              );
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  // =========================
+  // LOADING
+  // =========================
 
   if (loading) {
 
@@ -139,17 +181,26 @@ export default function ProductionDetailScreen({
     );
   }
 
+  // =========================
+  // ANIMAL DATA
+  // =========================
+
   const animal =
     animals.find(
       (a: any) =>
         a.animalId ===
-        production.animalId
+        production?.animalId
     );
+
+  // =========================
+  // UI
+  // =========================
 
   return (
 
     <ScrollView
       style={styles.container}
+      showsVerticalScrollIndicator={false}
     >
 
       {/* HEADER */}
@@ -195,7 +246,8 @@ export default function ProductionDetailScreen({
 
         <Text style={styles.value}>
           {
-            animal?.animalName
+            animal?.animalName ||
+            "Animal desconocido"
           }
         </Text>
 
@@ -230,48 +282,57 @@ export default function ProductionDetailScreen({
         </Text>
 
       </View>
-          {production && (
 
-  <TouchableOpacity
-    style={styles.editButton}
-    onPress={() =>
-      navigation.navigate(
-        "UpdateProduction",
-        {
-          production,
-        }
-      )
-    }
-  >
+      {/* EDIT BUTTON */}
 
-    <Ionicons
-      name="create-outline"
-      size={22}
-      color="#fff"
-    />
+      {production && (
 
-    <Text style={styles.editButtonText}>
-      Editar producción
-    </Text>
+        <TouchableOpacity
+          style={styles.editButton}
+          onPress={() =>
+            navigation.navigate(
+              "UpdateProduction",
+              {
+                production,
+              }
+            )
+          }
+        >
 
-  </TouchableOpacity>
-)}
-<TouchableOpacity
-  style={styles.deleteButton}
-  onPress={handleDelete}
->
+          <Ionicons
+            name="create-outline"
+            size={22}
+            color="#fff"
+          />
 
-  <Ionicons
-    name="trash-outline"
-    size={22}
-    color="#fff"
-  />
+          <Text style={styles.editButtonText}>
+            Editar producción
+          </Text>
 
-  <Text style={styles.deleteButtonText}>
-    Eliminar producción
-  </Text>
+        </TouchableOpacity>
+      )}
 
-</TouchableOpacity>
+      {/* DELETE BUTTON */}
+
+      <TouchableOpacity
+        style={styles.deleteButton}
+        onPress={handleDelete}
+      >
+
+        <Ionicons
+          name="trash-outline"
+          size={22}
+          color="#fff"
+        />
+
+        <Text style={styles.deleteButtonText}>
+          Eliminar producción
+        </Text>
+
+      </TouchableOpacity>
+
+      <View style={{ height: 40 }} />
+
     </ScrollView>
   );
 }
@@ -340,6 +401,12 @@ const styles = StyleSheet.create({
     padding: 24,
 
     borderRadius: 24,
+
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+
+    elevation: 4,
   },
 
   label: {
@@ -354,56 +421,59 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     marginTop: 6,
   },
+
   editButton: {
 
-  backgroundColor: "#3b82f6",
+    backgroundColor: "#3b82f6",
 
-  paddingVertical: 18,
+    paddingVertical: 18,
 
-  borderRadius: 40,
+    borderRadius: 20,
 
-  justifyContent: "center",
-  alignItems: "center",
+    justifyContent: "center",
+    alignItems: "center",
 
-  flexDirection: "row",
+    flexDirection: "row",
 
-  marginTop: 30,
-},
+    marginHorizontal: 24,
+  },
 
-editButtonText: {
+  editButtonText: {
 
-  color: "#fff",
+    color: "#fff",
 
-  fontSize: 16,
+    fontSize: 16,
 
-  fontWeight: "800",
+    fontWeight: "800",
 
-  marginLeft: 0,
-},
-deleteButton: {
+    marginLeft: 10,
+  },
 
-  backgroundColor: "#ef4444",
+  deleteButton: {
 
-  paddingVertical: 18,
+    backgroundColor: "#ef4444",
 
-  borderRadius: 20,
+    paddingVertical: 18,
 
-  justifyContent: "center",
-  alignItems: "center",
+    borderRadius: 20,
 
-  flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
 
-  marginTop: 16,
-},
+    flexDirection: "row",
 
-deleteButtonText: {
+    marginTop: 16,
+    marginHorizontal: 24,
+  },
 
-  color: "#fff",
+  deleteButtonText: {
 
-  fontSize: 16,
+    color: "#fff",
 
-  fontWeight: "800",
+    fontSize: 16,
 
-  marginLeft: 10,
-},
+    fontWeight: "800",
+
+    marginLeft: 10,
+  },
 });

@@ -81,9 +81,6 @@ export default function EditAnimalScreen({
         animal.animalId,
         {
 
-          ownerId:
-            animal.ownerId,
-
           animalName,
           animalType,
           animalBreed,

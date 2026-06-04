@@ -1,5 +1,9 @@
+import {
+  API_CONFIG
+} from "../config/api";
+
 const API_URL =
-  "http://192.168.153.77:5264/api/v1/auth";
+  `${API_CONFIG.BASE_URL}${API_CONFIG.AUTH}`;
 
 
 // =========================

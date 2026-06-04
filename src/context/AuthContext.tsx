@@ -103,8 +103,7 @@ export function AuthProvider({
 
     // PROFILE ID
 
-    const profileId =
-  String(data.profileId);
+    // (no longer needed - JWT handles auth)
 
     // SAVE TOKEN
 
@@ -113,18 +112,14 @@ export function AuthProvider({
       token
     );
 
-    // SAVE PROFILE ID
-
-    await AsyncStorage.setItem(
-      "profileId",
-      profileId
+    console.log(
+      "[AuthContext] Token saved:",
+      token.substring(0, 20) + "..."
     );
 
     // USER DATA
 
     const userData = {
-
-      profileId,
 
       email:
         data.email ||
@@ -160,10 +155,6 @@ export function AuthProvider({
 
     await AsyncStorage.removeItem(
       "token"
-    );
-
-    await AsyncStorage.removeItem(
-      "profileId"
     );
 
     await AsyncStorage.removeItem(

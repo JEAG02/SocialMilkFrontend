@@ -8,7 +8,9 @@ import {
   View,
 } from "react-native";
 
-import { useEffect, useState } from "react";
+import React, {
+  useState,
+} from "react";
 
 import AsyncStorage
 from "@react-native-async-storage/async-storage";
@@ -24,10 +26,8 @@ import {
   useFocusEffect,
 } from "@react-navigation/native";
 
-import React from "react";
-
 const API_URL =
-  "http://192.168.153.77:5264/api/v1/production";
+  "http://192.168.38.77:5264/api/v1/production";
 
 export default function ProductionScreen({
   navigation,
@@ -53,11 +53,12 @@ export default function ProductionScreen({
   ] = useState<any[]>([]);
 
   const [summary, setSummary] =
-  useState<any>(null);
+    useState<any>(null);
 
-const [summaryPeriod,
-  setSummaryPeriod] =
-  useState("daily");
+  const [
+    summaryPeriod,
+    setSummaryPeriod,
+  ] = useState("daily");
 
   const [loading, setLoading]
     = useState(false);
@@ -71,16 +72,20 @@ const [summaryPeriod,
 
     try {
 
-      const profileId =
+      const token =
         await AsyncStorage.getItem(
-          "profileId"
+          "token"
         );
-
-      if (!profileId) return;
 
       const response =
         await fetch(
-          `${API_URL}?ownerId=${profileId}`
+          API_URL,
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
         );
 
       if (!response.ok) {
@@ -101,49 +106,65 @@ const [summaryPeriod,
     }
   };
 
-  useFocusEffect(
+  // =========================
+  // LOAD SUMMARY
+  // =========================
 
-  React.useCallback(() => {
+  const loadSummary =
+    async (
+      animalId: string,
+      period: string
+    ) => {
 
-    loadProductions();
+    try {
 
-  }, [])
-);
+      const token =
+        await AsyncStorage.getItem(
+          "token"
+        );
+
+      const response =
+        await fetch(
+`${API_URL}/summary?animalId=${animalId}&period=${period}`,
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+        );
+
+      if (!response.ok) {
+
+        throw new Error(
+          "Error cargando summary"
+        );
+      }
+
+      const data =
+        await response.json();
+
+      setSummary(data);
+
+    } catch (error) {
+
+      console.log(error);
+    }
+  };
 
   // =========================
-// LOAD SUMMARY
-// =========================
+  // REFRESH SCREEN
+  // =========================
 
-const loadSummary =
-  async (
-    animalId: string,
-    period: string
-  ) => {
+  useFocusEffect(
 
-  try {
+    React.useCallback(() => {
 
-    const response =
-      await fetch(
-        `${API_URL}/summary?animalId=${animalId}&period=${period}`
-      );
+      loadProductions();
 
-    if (!response.ok) {
+    }, [])
+  );
 
-      throw new Error(
-        "Error cargando summary"
-      );
-    }
-
-    const data =
-      await response.json();
-
-    setSummary(data);
-
-  } catch (error) {
-
-    console.log(error);
-  }
-};
   // =========================
   // CREATE PRODUCTION
   // =========================
@@ -169,17 +190,10 @@ const loadSummary =
 
       setLoading(true);
 
-      const profileId =
+      const token =
         await AsyncStorage.getItem(
-          "profileId"
+          "token"
         );
-
-      if (!profileId) {
-
-        throw new Error(
-          "No existe profileId"
-        );
-      }
 
       const response =
         await fetch(
@@ -190,11 +204,12 @@ const loadSummary =
             headers: {
               "Content-Type":
                 "application/json",
+
+              Authorization:
+                `Bearer ${token}`,
             },
 
             body: JSON.stringify({
-
-              ownerId: profileId,
 
               animalId:
                 selectedAnimal,
@@ -259,8 +274,6 @@ const loadSummary =
 
       <View style={styles.header}>
 
-        {/* LEFT */}
-
         <View
           style={{
             flexDirection: "row",
@@ -298,8 +311,6 @@ const loadSummary =
 
         </View>
 
-        {/* RIGHT */}
-
         <View style={styles.headerIcon}>
 
           <Ionicons
@@ -335,7 +346,7 @@ const loadSummary =
           style={styles.input}
         />
 
-        {/* ANIMAL */}
+        {/* ANIMALES */}
 
         <Text style={styles.label}>
           Selecciona animal
@@ -356,21 +367,24 @@ const loadSummary =
 
                 selectedAnimal ===
                   animal.animalId && {
-                    backgroundColor: "#3b82f6",
-                    borderColor: "#3b82f6",
+                    backgroundColor:
+                      "#3b82f6",
+
+                    borderColor:
+                      "#3b82f6",
                   },
               ]}
               onPress={() => {
 
-  setSelectedAnimal(
-    animal.animalId
-  );
+                setSelectedAnimal(
+                  animal.animalId
+                );
 
-  loadSummary(
-    animal.animalId,
-    summaryPeriod
-  );
-}}
+                loadSummary(
+                  animal.animalId,
+                  summaryPeriod
+                );
+              }}
             >
 
               <Ionicons
@@ -442,186 +456,200 @@ const loadSummary =
 
       </View>
 
-{/* SUMMARY */}
+      {/* SUMMARY */}
 
-{!!selectedAnimal && (
+      {!!selectedAnimal && (
 
-<View style={styles.summaryCard}>
+        <View style={styles.summaryCard}>
 
-  <Text style={styles.summaryTitle}>
-    Resumen producción
-  </Text>
+          <Text style={styles.summaryTitle}>
+            Resumen producción
+          </Text>
 
-  {/* PERIODOS */}
+          {/* PERIODOS */}
 
-  <View style={styles.periodContainer}>
+          <View style={styles.periodContainer}>
 
-    {["daily", "weekly", "monthly"]
-      .map((period) => (
+            {[
+              "daily",
+              "weekly",
+              "monthly",
+            ].map((period) => (
 
-      <TouchableOpacity
-        key={period}
-        style={[
+              <TouchableOpacity
+                key={period}
+                style={[
 
-          styles.periodButton,
+                  styles.periodButton,
 
-          summaryPeriod === period && {
-            backgroundColor:
-              "#3b82f6",
-          },
-        ]}
-        onPress={() => {
+                  summaryPeriod ===
+                    period && {
+                      backgroundColor:
+                        "#3b82f6",
+                    },
+                ]}
+                onPress={() => {
 
-          setSummaryPeriod(period);
+                  setSummaryPeriod(
+                    period
+                  );
 
-          loadSummary(
-            selectedAnimal,
-            period
-          );
-        }}
-      >
+                  loadSummary(
+                    selectedAnimal,
+                    period
+                  );
+                }}
+              >
 
-        <Text
-          style={[
+                <Text
+                  style={[
 
-            styles.periodText,
+                    styles.periodText,
 
-            summaryPeriod === period && {
-              color: "#fff",
-            },
-          ]}
-        >
-          {
-            period === "daily"
-              ? "Diario"
-              : period === "weekly"
-              ? "Semanal"
-              : "Mensual"
-          }
-        </Text>
+                    summaryPeriod ===
+                      period && {
+                        color: "#fff",
+                      },
+                  ]}
+                >
+                  {
+                    period === "daily"
+                      ? "Diario"
+                      : period ===
+                        "weekly"
+                      ? "Semanal"
+                      : "Mensual"
+                  }
+                </Text>
 
-      </TouchableOpacity>
-    ))}
+              </TouchableOpacity>
+            ))}
 
-  </View>
+          </View>
 
-  {/* DATA */}
+          {/* DATA */}
 
-  {summary && (
+          {summary && (
 
-    <View
-      style={styles.summaryData}
-    >
+            <View
+              style={styles.summaryData}
+            >
 
-      <Text style={styles.summaryValue}>
-        {
-          summary.totalMilkVolume
-        } L
-      </Text>
+              <Text
+                style={styles.summaryValue}
+              >
+                {
+                  summary.totalMilkVolume
+                } L
+              </Text>
 
-      <Text style={styles.summaryLabel}>
-        Producción total
-      </Text>
+              <Text
+                style={styles.summaryLabel}
+              >
+                Producción total
+              </Text>
 
-    </View>
-  )}
+            </View>
+          )}
 
-</View>
-)}
+        </View>
+      )}
+
       {/* HISTORIAL */}
 
-<View style={styles.historyContainer}>
+      <View style={styles.historyContainer}>
 
-  <Text style={styles.historyTitle}>
-    Historial reciente
-  </Text>
+        <Text style={styles.historyTitle}>
+          Historial reciente
+        </Text>
 
-  {productions.map((item) => {
+        {productions.map((item) => {
 
-    const animal =
-      animals.find(
-        (a: any) =>
-          a.animalId === item.animalId
-      );
+          const animal =
+            animals.find(
+              (a: any) =>
+                a.animalId ===
+                item.animalId
+            );
 
-    return (
+          return (
 
-      <TouchableOpacity
-        key={item.productionId}
-        style={styles.productionCard}
-        onPress={() =>
-          navigation.navigate(
-            "ProductionDetail",
-            {
-              productionId:
-                item.productionId,
-            }
-          )
-        }
-      >
+            <TouchableOpacity
+              key={item.productionId}
+              style={styles.productionCard}
+              onPress={() =>
+                navigation.navigate(
+                  "ProductionDetail",
+                  {
+                    productionId:
+                      item.productionId,
+                  }
+                )
+              }
+            >
 
-        <View
-          style={styles.productionIcon}
-        >
+              <View
+                style={styles.productionIcon}
+              >
 
-          <Ionicons
-            name="water-outline"
-            size={26}
-            color="#3b82f6"
-          />
+                <Ionicons
+                  name="water-outline"
+                  size={26}
+                  color="#3b82f6"
+                />
 
-        </View>
+              </View>
 
-        <View style={{ flex: 1 }}>
+              <View style={{ flex: 1 }}>
 
-          {/* LITROS */}
+                <Text
+                  style={
+                    styles.productionLiters
+                  }
+                >
+                  {
+                    item.milkVolumeLiters
+                  } L
+                </Text>
 
-          <Text
-            style={styles.productionLiters}
-          >
-            {
-              item.milkVolumeLiters
-            } L
-          </Text>
+                <Text
+                  style={
+                    styles.productionAnimal
+                  }
+                >
+                  🐄 {
+                    animal?.animalName ||
+                    "Animal desconocido"
+                  }
+                </Text>
 
-          {/* NOMBRE ANIMAL */}
+                <Text
+                  style={
+                    styles.productionInfo
+                  }
+                >
+                  Turno {item.shift}
+                </Text>
 
-          <Text
-            style={styles.productionAnimal}
-          >
-            🐄 {
-              animal?.animalName ||
-              "Animal desconocido"
-            }
-          </Text>
+                <Text
+                  style={
+                    styles.productionDate
+                  }
+                >
+                  {
+                    new Date(
+                      item.productionDate
+                    ).toLocaleDateString()
+                  }
+                </Text>
 
-          {/* TURNO */}
+              </View>
 
-          <Text
-            style={styles.productionInfo}
-          >
-            Turno {item.shift}
-          </Text>
+            </TouchableOpacity>
+          );
+        })}
 
-          {/* FECHA */}
-
-          <Text
-            style={styles.productionDate}
-          >
-            {
-              new Date(
-                item.productionDate
-              ).toLocaleDateString()
-            }
-          </Text>
-
-        </View>
-
-      </TouchableOpacity>
-    );
-  })}
-
-</View>
+      </View>
 
       <View style={{ height: 50 }} />
 
@@ -839,92 +867,95 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     color: "#111827",
   },
-  productionAnimal: {
-  marginTop: 6,
-  fontSize: 15,
-  fontWeight: "700",
-  color: "#1e293b",
-},
 
-productionDate: {
-  marginTop: 4,
-  color: "#94a3b8",
-  fontSize: 13,
-},
+  productionAnimal: {
+    marginTop: 6,
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#1e293b",
+  },
+
+  productionDate: {
+    marginTop: 4,
+    color: "#94a3b8",
+    fontSize: 13,
+  },
 
   productionInfo: {
     marginTop: 4,
     color: "#64748b",
     fontWeight: "600",
   },
+
   summaryCard: {
 
-  backgroundColor: "#fff",
+    backgroundColor: "#fff",
 
-  marginTop: 20,
+    marginHorizontal: 22,
+    marginBottom: 22,
 
-  borderRadius: 24,
+    borderRadius: 24,
 
-  padding: 20,
-},
+    padding: 20,
+  },
 
-summaryTitle: {
-  fontSize: 20,
-  fontWeight: "800",
-  color: "#111827",
-  marginBottom: 18,
-},
+  summaryTitle: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#111827",
+    marginBottom: 18,
+  },
 
-periodContainer: {
+  periodContainer: {
 
-  flexDirection: "row",
+    flexDirection: "row",
 
-  justifyContent: "space-between",
+    justifyContent: "space-between",
 
-  marginBottom: 20,
-},
+    marginBottom: 20,
+  },
 
-periodButton: {
+  periodButton: {
 
-  flex: 1,
+    flex: 1,
 
-  paddingVertical: 12,
+    paddingVertical: 12,
 
-  borderRadius: 14,
+    borderRadius: 14,
 
-  backgroundColor: "#eff6ff",
+    backgroundColor: "#eff6ff",
 
-  marginHorizontal: 4,
+    marginHorizontal: 4,
 
-  alignItems: "center",
-},
+    alignItems: "center",
+  },
 
-periodText: {
+  periodText: {
 
-  color: "#3b82f6",
+    color: "#3b82f6",
 
-  fontWeight: "700",
-},
+    fontWeight: "700",
+  },
 
-summaryData: {
-  alignItems: "center",
-},
+  summaryData: {
+    alignItems: "center",
+  },
 
-summaryValue: {
+  summaryValue: {
 
-  fontSize: 42,
+    fontSize: 42,
 
-  fontWeight: "900",
+    fontWeight: "900",
 
-  color: "#3b82f6",
-},
+    color: "#3b82f6",
+  },
 
-summaryLabel: {
+  summaryLabel: {
 
-  marginTop: 6,
+    marginTop: 6,
 
-  color: "#64748b",
+    color: "#64748b",
 
-  fontWeight: "600",
-},
+    fontWeight: "600",
+  },
 });

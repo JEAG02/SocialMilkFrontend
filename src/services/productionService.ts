@@ -1,22 +1,36 @@
 import AsyncStorage
 from "@react-native-async-storage/async-storage";
 
+import {
+  API_CONFIG
+} from "../config/api";
+
 const API_URL =
-  "http://192.168.153.77:5264/api/v1/production";
+  `${API_CONFIG.BASE_URL}${API_CONFIG.PRODUCTION}`;
 
 // =========================
 // GET ALL
 // =========================
 
-export async function getProductions(
-  profileId: string
-) {
+export async function getProductions() {
+
+  const token =
+    await AsyncStorage.getItem(
+      "token"
+    );
 
   const response = await fetch(
-    `${API_URL}?profileId=${profileId}`
+    API_URL,
+    {
+      headers: {
+        Authorization:
+          `Bearer ${token}`,
+      },
+    }
   );
 
   if (!response.ok) {
+
     throw new Error(
       "Error obteniendo producciones"
     );
@@ -33,6 +47,11 @@ export async function createProduction(
   production: any
 ) {
 
+  const token =
+    await AsyncStorage.getItem(
+      "token"
+    );
+
   const response = await fetch(
     API_URL,
     {
@@ -41,6 +60,9 @@ export async function createProduction(
       headers: {
         "Content-Type":
           "application/json",
+
+        Authorization:
+          `Bearer ${token}`,
       },
 
       body: JSON.stringify(
@@ -73,6 +95,11 @@ export async function updateProduction(
   production: any
 ) {
 
+  const token =
+    await AsyncStorage.getItem(
+      "token"
+    );
+
   const response =
     await fetch(
       `${API_URL}/${id}`,
@@ -82,6 +109,9 @@ export async function updateProduction(
         headers: {
           "Content-Type":
             "application/json",
+
+          Authorization:
+            `Bearer ${token}`,
         },
 
         body: JSON.stringify(
@@ -92,6 +122,11 @@ export async function updateProduction(
 
   if (!response.ok) {
 
+    const error =
+      await response.text();
+
+    console.log(error);
+
     throw new Error(
       "Error actualizando producción"
     );
@@ -99,6 +134,7 @@ export async function updateProduction(
 
   return response.json();
 }
+
 // =========================
 // GET BY ID
 // =========================
@@ -131,28 +167,47 @@ export async function getProductionById(
 
   return response.json();
 }
+
 // =========================
 // DELETE
 // =========================
 
-export async function deleteProduction(
-  id: string
+export async function
+deleteProduction(
+  productionId: string
 ) {
 
-  const response = await fetch(
-    `${API_URL}/${id}`,
-    {
-      method: "DELETE",
-    }
-  );
+  const token =
+    await AsyncStorage.getItem(
+      "token"
+    );
+
+  const response =
+    await fetch(
+      `${API_URL}/${productionId}`,
+      {
+        method: "DELETE",
+
+        headers: {
+          Authorization:
+            `Bearer ${token}`,
+        },
+      }
+    );
 
   if (!response.ok) {
+
+    const error =
+      await response.text();
+
+    console.log(error);
+
     throw new Error(
       "Error eliminando producción"
     );
   }
 
-  return response.json();
+  return true;
 }
 
 // =========================
@@ -160,14 +215,27 @@ export async function deleteProduction(
 // =========================
 
 export async function getProductionSummary(
-  profileId: string
+  animalId: string,
+  period: string
 ) {
 
+  const token =
+    await AsyncStorage.getItem(
+      "token"
+    );
+
   const response = await fetch(
-    `${API_URL}/summary?profileId=${profileId}`
+    `${API_URL}/summary?animalId=${animalId}&period=${period}`,
+    {
+      headers: {
+        Authorization:
+          `Bearer ${token}`,
+      },
+    }
   );
 
   if (!response.ok) {
+
     throw new Error(
       "Error obteniendo resumen"
     );

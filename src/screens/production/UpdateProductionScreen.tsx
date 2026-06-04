@@ -12,6 +12,9 @@ import {
   useState,
 } from "react";
 
+import AsyncStorage
+from "@react-native-async-storage/async-storage";
+
 import Ionicons
 from "@expo/vector-icons/Ionicons";
 
@@ -83,15 +86,24 @@ UpdateProductionScreen({
 
       setSaving(true);
 
+      const token =
+        await AsyncStorage.getItem(
+          "token"
+        );
+
+      if (!token) {
+
+        throw new Error(
+          "No existe token"
+        );
+      }
+
       await updateProduction(
         production.productionId,
         {
 
           animalId:
             production.animalId,
-
-          ownerId:
-            production.ownerId,
 
           productionDate:
             production.productionDate,
@@ -170,30 +182,30 @@ UpdateProductionScreen({
         {/* ANIMAL */}
 
         <Text style={styles.label}>
-  Animal
-</Text>
+          Animal
+        </Text>
 
-<View style={styles.infoBox}>
+        <View style={styles.infoBox}>
 
-  <Ionicons
-    name="paw"
-    size={20}
-    color="#3b82f6"
-  />
+          <Ionicons
+            name="paw"
+            size={20}
+            color="#3b82f6"
+          />
 
-  <Text style={styles.infoText}>
+          <Text style={styles.infoText}>
 
-    {
-      animals.find(
-        (a: any) =>
-          a.animalId ===
-          production.animalId
-      )?.animalName
-    }
+            {
+              animals.find(
+                (a: any) =>
+                  a.animalId ===
+                  production.animalId
+              )?.animalName
+            }
 
-  </Text>
+          </Text>
 
-</View>
+        </View>
 
         {/* LITROS */}
 

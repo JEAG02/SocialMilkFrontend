@@ -8,6 +8,8 @@ import {
 import AsyncStorage
 from "@react-native-async-storage/async-storage";
 
+import { useAuth } from "./AuthContext";
+
 import {
   getTasks,
   createTask as createTaskService,
@@ -31,8 +33,6 @@ type TaskStatus =
 export interface Task {
 
   taskId: string;
-
-  profileId: string;
 
   taskTitle: string;
 
@@ -83,6 +83,8 @@ export function TasksProvider({
   children,
 }: any) {
 
+  const { isAuthenticated, loading: authLoading } = useAuth();
+
   const [tasks, setTasks] =
     useState<Task[]>([]);
 
@@ -100,17 +102,8 @@ export function TasksProvider({
 
       setLoading(true);
 
-      const profileId =
-        await AsyncStorage.getItem(
-          "profileId"
-        );
-
-      if (!profileId) return;
-
       const data =
-        await getTasks(
-          profileId
-        );
+        await getTasks();
 
       console.log("TASKS:");
       console.log(data);
@@ -128,14 +121,16 @@ export function TasksProvider({
   };
 
   // =========================
-  // INITIAL LOAD
+  // INITIAL LOAD (cuando auth esté lista)
   // =========================
 
   useEffect(() => {
 
-    loadTasks();
+    if (!authLoading && isAuthenticated) {
+      loadTasks();
+    }
 
-  }, []);
+  }, [authLoading, isAuthenticated]);
 
   // =========================
   // CREATE TASK
@@ -146,21 +141,7 @@ export function TasksProvider({
 
     try {
 
-      const profileId =
-        await AsyncStorage.getItem(
-          "profileId"
-        );
-
-      if (!profileId) {
-
-        throw new Error(
-          "No existe profileId"
-        );
-      }
-
       await createTaskService({
-
-        ownerId: profileId,
 
         taskTitle:
           task.taskTitle,

@@ -8,6 +8,8 @@ import {
 import AsyncStorage
 from "@react-native-async-storage/async-storage";
 
+import { useAuth } from "./AuthContext";
+
 import {
   getProductions,
   createProduction as createProductionService,
@@ -22,11 +24,13 @@ export interface Production {
 
   productionId: string;
 
-  profileId: string;
+  animalId: string;
 
-  liters: number;
+  milkVolumeLiters: number;
 
   productionDate: string;
+
+  shift: string;
 
   notes?: string;
 }
@@ -57,6 +61,8 @@ export function ProductionProvider({
   children,
 }: any) {
 
+  const { isAuthenticated, loading: authLoading } = useAuth();
+
   const [
     productions,
     setProductions,
@@ -76,17 +82,8 @@ export function ProductionProvider({
 
       setLoading(true);
 
-      const profileId =
-        await AsyncStorage.getItem(
-          "profileId"
-        );
-
-      if (!profileId) return;
-
       const data =
-        await getProductions(
-          profileId
-        );
+        await getProductions();
 
       setProductions(data);
 
@@ -106,9 +103,11 @@ export function ProductionProvider({
 
   useEffect(() => {
 
-    loadProductions();
+    if (!authLoading && isAuthenticated) {
+      loadProductions();
+    }
 
-  }, []);
+  }, [authLoading, isAuthenticated]);
 
   // =========================
   // CREATE
@@ -121,14 +120,7 @@ export function ProductionProvider({
 
     try {
 
-      const profileId =
-        await AsyncStorage.getItem(
-          "profileId"
-        );
-
       await createProductionService({
-
-  ownerId: profileId,
 
   animalId:
     production.animalId,

@@ -37,12 +37,17 @@ export default function LoginScreen({
     setLoading(true);
 
     const res =
-      await loginService(
-        email,
-        password
-      );
+  await loginService(
+    email,
+    password
+  );
 
-    await login(res);
+console.log(
+  "LOGIN RES:",
+  res
+);
+
+await login(res);
 
   } catch (error) {
 

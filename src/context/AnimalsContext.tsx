@@ -8,6 +8,8 @@ import {
 import AsyncStorage
 from "@react-native-async-storage/async-storage";
 
+import { useAuth } from "./AuthContext";
+
 import {
   getAnimals,
 } from "../services/animalsService";
@@ -15,8 +17,6 @@ import {
 export interface Animal {
 
   animalId: string;
-
-  ownerId: string;
 
   animalName: string;
 
@@ -41,6 +41,8 @@ export function AnimalsProvider({
   children,
 }: any) {
 
+  const { isAuthenticated, loading: authLoading } = useAuth();
+
   const [animals, setAnimals] =
     useState<Animal[]>([]);
 
@@ -53,13 +55,6 @@ export function AnimalsProvider({
     try {
 
       setLoading(true);
-
-      const profileId =
-        await AsyncStorage.getItem(
-          "profileId"
-        );
-
-      if (!profileId) return;
 
       const data =
         await getAnimals();
@@ -78,9 +73,11 @@ export function AnimalsProvider({
 
   useEffect(() => {
 
-    loadAnimals();
+    if (!authLoading && isAuthenticated) {
+      loadAnimals();
+    }
 
-  }, []);
+  }, [authLoading, isAuthenticated]);
 
   return (
 

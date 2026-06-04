@@ -53,18 +53,18 @@ export default function App() {
 
   return (
 
-    <AnimalsProvider>
+    <AuthProvider>
 
-      <TasksProvider>
+      <AnimalsProvider>
 
-        <AuthProvider>
+        <TasksProvider>
 
           <Routes />
 
-        </AuthProvider>
+        </TasksProvider>
 
-      </TasksProvider>
+      </AnimalsProvider>
 
-    </AnimalsProvider>
+    </AuthProvider>
   );
 }
