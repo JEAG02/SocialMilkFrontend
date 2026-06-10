@@ -20,6 +20,11 @@ import salesDetailScreen from "../screens/sales/SaleDetailScreen";
 import updateSaleScreen from "../screens/sales/UpdateSaleScreen";
 import userProfileScreen from "../screens/social/UserProfileScreen";
 import postDetailScreen from "../screens/social/PostDetailScreen";
+import AnimalHealthRecordsScreen from "../screens/animals/AnimalHealthRecordsScreen";
+import AnimalHealthRecordFormScreen from "../screens/animals/AnimalHealthRecordFormScreen";
+import CreateHealthRecord from "../screens/animals/AnimalHealthRecordFormScreen";
+import EditHealthRecordScreen from "../screens/animals/EditHealthRecordScreen";
+import AnimalHealtEventsScreen from "../screens/animals/AnimalHealthEventsScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -46,6 +51,11 @@ export default function MainStack() {
       <Stack.Screen name="UpdateSale" component={updateSaleScreen} />
       <Stack.Screen name="UserProfile" component={userProfileScreen} />
       <Stack.Screen name="PostDetail" component={postDetailScreen} />
+      <Stack.Screen name="AnimalHealthRecords" component={AnimalHealthRecordsScreen} />
+      <Stack.Screen name="AnimalHealthRecordForm" component={AnimalHealthRecordFormScreen} />
+      <Stack.Screen name="CreateHealthRecord" component={CreateHealthRecord} />
+      <Stack.Screen name="EditHealthRecord" component={EditHealthRecordScreen} />
+      <Stack.Screen name="AnimalHealthEvent" component={AnimalHealtEventsScreen} />
     </Stack.Navigator>
   );
 }

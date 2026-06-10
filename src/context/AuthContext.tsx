@@ -120,16 +120,18 @@ export function AuthProvider({
     // USER DATA
 
     const userData = {
+  profileId:
+    data.profileId ||
+    data.id ||
+    data.userId ||
+    "",
 
-      email:
-        data.email ||
-        "",
+  email:
+    data.email || "",
 
-      fullName:
-        data.fullName ||
-        "",
-    };
-
+  fullName:
+    data.fullName || "",
+};
     // SAVE USER
 
     await AsyncStorage.setItem(

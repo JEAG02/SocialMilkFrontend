@@ -8,6 +8,35 @@ import {
 const API_URL =
   `${API_CONFIG.BASE_URL}${API_CONFIG.SALES}`;
 
+
+  export const getSales =
+  async () => {
+
+  const token =
+    await AsyncStorage.getItem(
+      "token"
+    );
+
+  const response =
+    await fetch(
+      API_URL,
+      {
+        headers: {
+          Authorization:
+            `Bearer ${token}`,
+        },
+      }
+    );
+
+  if (!response.ok) {
+
+    throw new Error(
+      "Error obteniendo ventas"
+    );
+  }
+
+  return await response.json();
+};
 export const updateSale =
   async (
     saleId: string,

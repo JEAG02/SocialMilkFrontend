@@ -7,7 +7,16 @@ import {
   TextInput,
 } from "react-native";
 
-import { useState } from "react";
+import { createAiInteraction }
+from "../../services/aiService";
+
+import { useAuth }
+from "../../context/AuthContext";
+
+import AsyncStorage
+from "@react-native-async-storage/async-storage";
+
+import { useState, useEffect, } from "react";
 
 import Ionicons
 from "@expo/vector-icons/Ionicons";
@@ -16,30 +25,114 @@ export default function AIScreen({
   navigation,
 }: any) {
 
-  const [message, setMessage]
-    = useState("");
+  const [message, setMessage] =
+    useState("");
 
-  const messages = [
-    {
-      id: 1,
-      type: "ai",
-      text:
-        "Hola 👋 Soy tu asistente virtual ganadero. ¿En qué puedo ayudarte hoy?",
-    },
-    {
-      id: 2,
-      type: "user",
-      text:
-        "¿Cómo puedo mejorar la producción lechera?",
-    },
-    {
-      id: 3,
-      type: "ai",
-      text:
-        "Puedes mejorar la alimentación, controlar la hidratación y mantener un monitoreo constante del ganado.",
-    },
-  ];
+    const { user } = useAuth();
 
+  const [profileId, setProfileId] =
+    useState(
+      "21ab04c9-b24a-4f99-06f1-08deb67a02fd"
+    );
+
+  const [messages, setMessages] =
+    useState<any[]>([
+      {
+        id: 1,
+        type: "ai",
+        text:
+          "Hola 👋 Soy tu asistente virtual ganadero. ¿Qué deseas consultar?",
+      },
+    ]);
+
+  const askQuestion =
+    async (
+      question: string
+    ) => {
+
+      try {
+
+        // MENSAJE USUARIO
+
+        setMessages(prev => [
+
+          ...prev,
+
+          {
+            id: Date.now(),
+            type: "user",
+            text: question,
+          },
+        ]);
+
+        // LLAMADA API
+
+        const response =
+          await createAiInteraction(
+  user.profileId,
+  question
+);
+
+        console.log(
+          "AI RESPONSE:"
+        );
+
+        console.log(response);
+
+        // RESPUESTA IA
+
+        setMessages(prev => [
+
+          ...prev,
+
+          {
+            id:
+              Date.now() + 1,
+
+            type: "ai",
+
+            text:
+              response.responseText ||
+              response.answer ||
+              response.message ||
+              "No se recibió respuesta",
+          },
+        ]);
+
+      } catch (error) {
+
+        console.log(error);
+
+        setMessages(prev => [
+
+          ...prev,
+
+          {
+            id:
+              Date.now() + 1,
+
+            type: "ai",
+
+            text:
+              "No fue posible obtener una respuesta.",
+          },
+        ]);
+      }
+    };
+
+  const sendCustomQuestion =
+    () => {
+
+      if (
+        !message.trim()
+      ) {
+        return;
+      }
+
+      askQuestion(message);
+
+      setMessage("");
+    };
   return (
     <View style={styles.container}>
 
@@ -99,44 +192,78 @@ export default function AIScreen({
       {/* QUICK ACTIONS */}
 
       <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.quickContainer}
-      >
+  horizontal
+  showsHorizontalScrollIndicator={false}
+  style={styles.quickContainer}
+>
 
-        <TouchableOpacity
-          style={styles.quickButton}
-        >
-          <Text style={styles.quickText}>
-            Producción
-          </Text>
-        </TouchableOpacity>
+  <TouchableOpacity
+    style={styles.quickButton}
+    onPress={() =>
+      askQuestion("produccion")
+    }
+  >
+    <Text style={styles.quickText}>
+      Producción
+    </Text>
+  </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.quickButton}
-        >
-          <Text style={styles.quickText}>
-            Alimentación
-          </Text>
-        </TouchableOpacity>
+  <TouchableOpacity
+    style={styles.quickButton}
+    onPress={() =>
+      askQuestion("ventas")
+    }
+  >
+    <Text style={styles.quickText}>
+      Ventas
+    </Text>
+  </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.quickButton}
-        >
-          <Text style={styles.quickText}>
-            Vacunas
-          </Text>
-        </TouchableOpacity>
+  <TouchableOpacity
+    style={styles.quickButton}
+    onPress={() =>
+      askQuestion("inventario")
+    }
+  >
+    <Text style={styles.quickText}>
+      Inventario
+    </Text>
+  </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.quickButton}
-        >
-          <Text style={styles.quickText}>
-            Enfermedades
-          </Text>
-        </TouchableOpacity>
+  <TouchableOpacity
+    style={styles.quickButton}
+    onPress={() =>
+      askQuestion("animal")
+    }
+  >
+    <Text style={styles.quickText}>
+      Animales
+    </Text>
+  </TouchableOpacity>
 
-      </ScrollView>
+  <TouchableOpacity
+    style={styles.quickButton}
+    onPress={() =>
+      askQuestion("salud")
+    }
+  >
+    <Text style={styles.quickText}>
+      Salud
+    </Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    style={styles.quickButton}
+    onPress={() =>
+      askQuestion("post")
+    }
+  >
+    <Text style={styles.quickText}>
+      Posts
+    </Text>
+  </TouchableOpacity>
+
+</ScrollView>
 
       {/* CHAT */}
 
@@ -215,16 +342,17 @@ export default function AIScreen({
         />
 
         <TouchableOpacity
-          style={styles.sendButton}
-        >
+  style={styles.sendButton}
+  onPress={sendCustomQuestion}
+>
 
-          <Ionicons
-            name="send"
-            size={22}
-            color="#fff"
-          />
+  <Ionicons
+    name="send"
+    size={22}
+    color="#fff"
+  />
 
-        </TouchableOpacity>
+</TouchableOpacity>
 
       </View>
 

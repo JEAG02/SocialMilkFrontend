@@ -308,10 +308,59 @@ export default function AnimalDetailsScreen({
         </View>
 
       </View>
+      {/* HEALTH */}
 
+<View style={styles.healthActions}>
+
+  <TouchableOpacity
+    style={styles.healthCard}
+    onPress={() =>
+      navigation.navigate(
+        "AnimalHealthRecords",
+        { animalId }
+      )
+    }
+  >
+
+    <Ionicons
+      name="medkit"
+      size={28}
+      color="#fff"
+    />
+
+    <Text style={styles.healthCardText}>
+      Historial Médico
+    </Text>
+
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    style={styles.calendarCard}
+    onPress={() =>
+      navigation.navigate(
+        "AnimalHealthEvent",
+        { animalId }
+      )
+    }
+  >
+
+    <Ionicons
+      name="calendar"
+      size={28}
+      color="#fff"
+    />
+
+    <Text style={styles.healthCardText}>
+      Calendario Médico
+    </Text>
+
+  </TouchableOpacity>
+
+</View>
       {/* ACTIONS */}
 
       <View style={styles.actions}>
+        
 
         {/* EDIT */}
 
@@ -530,4 +579,45 @@ const styles = StyleSheet.create({
     fontSize: 15,
     marginLeft: 8,
   },
+  healthActions: {
+
+  marginHorizontal: 24,
+  marginBottom: 20,
+},
+
+healthCard: {
+
+  backgroundColor: "#3b82f6",
+
+  borderRadius: 22,
+
+  paddingVertical: 20,
+
+  justifyContent: "center",
+  alignItems: "center",
+
+  marginBottom: 12,
+},
+
+calendarCard: {
+
+  backgroundColor: "#16a34a",
+
+  borderRadius: 22,
+
+  paddingVertical: 20,
+
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+healthCardText: {
+
+  color: "#fff",
+
+  fontSize: 16,
+  fontWeight: "800",
+
+  marginTop: 8,
+},
 });

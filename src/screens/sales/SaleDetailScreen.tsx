@@ -23,8 +23,10 @@ import {
   deleteSale,
 } from "../../services/salesService";
 
+import { API_CONFIG } from "../../config/api";
+
 const API_URL =
-  "http://192.168.38.77:5264/api/v1/sales";
+  `${API_CONFIG.BASE_URL}${API_CONFIG.SALES}`;
 
 export default function
 SaleDetailScreen({

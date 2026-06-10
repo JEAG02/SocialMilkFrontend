@@ -19,6 +19,10 @@ from "@expo/vector-icons/Ionicons";
 import { useAuth } from "../../context/AuthContext";
 
 import {
+  getMyProfile,
+} from "../../services/authProfileService";
+
+import {
   getFeed,
   createPost,
   deletePost,
@@ -56,11 +60,29 @@ export default function SocialScreen({
     editingContent,
     setEditingContent,
   ] = useState("");
+  
+  const [myProfile, setMyProfile] =
+  useState<any>(null);
 
   // =========================
   // LOAD POSTS
   // =========================
 
+  const loadMyProfile =
+  async () => {
+
+  try {
+
+    const profile =
+      await getMyProfile();
+
+    setMyProfile(profile);
+
+  } catch (error) {
+
+    console.log(error);
+  }
+};
   const loadPosts =
     async () => {
 
@@ -258,12 +280,13 @@ const handleLikePost =
   useEffect(() => {
 
     if (
-      !authLoading &&
-      isAuthenticated
-    ) {
+  !authLoading &&
+  isAuthenticated
+) {
 
-      loadPosts();
-    }
+  loadPosts();
+  loadMyProfile();
+}
 
   }, [
     authLoading,
@@ -435,8 +458,8 @@ const handleLikePost =
 >
 
   <Text style={styles.user}>
-    Usuario
-  </Text>
+  {post.ownerFullName}
+</Text>
 
 </TouchableOpacity>
 
@@ -450,52 +473,58 @@ const handleLikePost =
 
               </View>
 
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 16,
-                }}
-              >
+              {
+  myProfile?.id === post.ownerId && (
 
-                <TouchableOpacity
-                  onPress={() => {
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 16,
+      }}
+    >
 
-                    setEditingPostId(
-                      post.id
-                    );
+      <TouchableOpacity
+        onPress={() => {
 
-                    setEditingContent(
-                      post.content
-                    );
-                  }}
-                >
+          setEditingPostId(
+            post.id
+          );
 
-                  <Ionicons
-                    name="create-outline"
-                    size={22}
-                    color="#3b82f6"
-                  />
+          setEditingContent(
+            post.content
+          );
+        }}
+      >
 
-                </TouchableOpacity>
+        <Ionicons
+          name="create-outline"
+          size={22}
+          color="#3b82f6"
+        />
 
-                <TouchableOpacity
-                  onPress={() =>
-                    handleDeletePost(
-                      post.id
-                    )
-                  }
-                >
+      </TouchableOpacity>
 
-                  <Ionicons
-                    name="trash-outline"
-                    size={22}
-                    color="#ef4444"
-                  />
+      <TouchableOpacity
+        onPress={() =>
+          handleDeletePost(
+            post.id
+          )
+        }
+      >
 
-                </TouchableOpacity>
+        <Ionicons
+          name="trash-outline"
+          size={22}
+          color="#ef4444"
+        />
 
-              </View>
+      </TouchableOpacity>
+
+    </View>
+
+  )
+}
 
             </View>
 

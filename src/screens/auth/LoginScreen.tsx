@@ -19,7 +19,7 @@ export default function LoginScreen({
   navigation,
 }: any) {
 
-  const [email, setEmail] =
+  const [identifier, setIdentifier] =
     useState("");
 
   const [password, setPassword] =
@@ -38,7 +38,7 @@ export default function LoginScreen({
 
     const res =
   await loginService(
-    email,
+    identifier,
     password
   );
 
@@ -81,7 +81,7 @@ await login(res);
       <View style={styles.form}>
 
         <Text style={styles.welcome}>
-          Bienvenido 💚
+          Bienvenido
         </Text>
 
         <Text style={styles.description}>
@@ -89,12 +89,12 @@ await login(res);
         </Text>
 
         <TextInput
-          placeholder="Correo electrónico"
-          placeholderTextColor="#9ca3af"
-          style={styles.input}
-          value={email}
-          onChangeText={setEmail}
-        />
+  placeholder="Correo o teléfono"
+  placeholderTextColor="#9ca3af"
+  style={styles.input}
+  value={identifier}
+  onChangeText={setIdentifier}
+/>
 
         <TextInput
           placeholder="Contraseña"

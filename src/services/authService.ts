@@ -5,33 +5,50 @@ import {
 const API_URL =
   `${API_CONFIG.BASE_URL}${API_CONFIG.AUTH}`;
 
-
 // =========================
 // LOGIN
 // =========================
 
 export async function login(
-  email: string,
+  identifier: string,
   password: string
 ) {
 
-  const response = await fetch(
-    `${API_URL}/login`,
-    {
-      method: "POST",
+  const isPhone =
+    /^[0-9]+$/.test(
+      identifier.trim()
+    );
 
-      headers: {
-        "Content-Type": "application/json",
-      },
+  const response =
+    await fetch(
+      `${API_URL}/login`,
+      {
+        method: "POST",
 
-      body: JSON.stringify({
-        email,
-        password,
-      }),
-    }
-  );
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+
+        body: JSON.stringify({
+
+          email:
+            isPhone
+              ? null
+              : identifier,
+
+          phone:
+            isPhone
+              ? identifier
+              : null,
+
+          password,
+        }),
+      }
+    );
 
   if (!response.ok) {
+
     throw new Error(
       "Credenciales inválidas"
     );
@@ -39,7 +56,6 @@ export async function login(
 
   return response.json();
 }
-
 
 // =========================
 // REGISTER

@@ -26,8 +26,10 @@ import {
   useFocusEffect,
 } from "@react-navigation/native";
 
+import { API_CONFIG } from "../../config/api";
+
 const API_URL =
-  "http://192.168.38.77:5264/api/v1/production";
+  `${API_CONFIG.BASE_URL}${API_CONFIG.PRODUCTION}`;
 
 export default function ProductionScreen({
   navigation,

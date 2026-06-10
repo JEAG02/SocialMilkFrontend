@@ -13,11 +13,117 @@ import {
   useAuth,
 } from "../../context/AuthContext";
 
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  getMyProfile,
+} from "../../services/authProfileService";
+
+import {
+  getProductions,
+} from "../../services/productionService";
+
+import {
+  getAnimals,
+} from "../../services/animalsService";
+
+import {
+  useAnimals,
+} from "../../context/AnimalsContext";
+
+import {
+  getSales,
+} from "../../services/salesService";
+
 export default function ProfileScreen({
   navigation,
 }: any) {
 
   const { logout } = useAuth();
+  const [profile, setProfile] =
+  useState<any>(null);
+  const { animals } = useAnimals();
+  
+const [animalsCount, setAnimalsCount] =
+  useState(0);
+
+const [productionsCount, setProductionsCount] =
+  useState(0);
+
+const [salesCount, setSalesCount] =
+  useState(0);
+  useEffect(() => {
+
+  loadProfile();
+  loadStats();
+}, []);
+
+
+const loadProfile =
+  async () => {
+
+  try {
+
+    const data =
+      await getMyProfile();
+
+    console.log(
+      "PROFILE:"
+    );
+
+    console.log(data);
+
+    setProfile(data);
+
+  } catch (error) {
+
+    console.log(error);
+  }
+};
+const loadStats =
+  async () => {
+
+  try {
+
+    const animals =
+      await getAnimals();
+
+    const productions =
+      await getProductions();
+
+    const sales =
+      await getSales();
+
+    setAnimalsCount(
+      Array.isArray(animals)
+        ? animals.length
+        : 0
+    );
+
+    setProductionsCount(
+      Array.isArray(productions)
+        ? productions.length
+        : 0
+    );
+
+    setSalesCount(
+      Array.isArray(sales)
+        ? sales.length
+        : 0
+    );
+
+  } catch (error) {
+
+    console.log(
+      "Error cargando stats"
+    );
+
+    console.log(error);
+  }
+};
 
   return (
     <ScrollView
@@ -65,12 +171,21 @@ export default function ProfileScreen({
         </View>
 
         <Text style={styles.name}>
-          Juan Esteban
-        </Text>
+  {
+    profile?.fullName ??
+    "Usuario"
+  }
+</Text>
 
         <Text style={styles.role}>
-          Productor Ganadero
-        </Text>
+  {
+    profile?.roleId === 1
+      ? "Productor Ganadero"
+      : profile?.roleId === 2
+      ? "Administrador"
+      : "Usuario"
+  }
+</Text>
 
         <View style={styles.locationRow}>
 
@@ -81,8 +196,11 @@ export default function ProfileScreen({
           />
 
           <Text style={styles.location}>
-            Manizales, Colombia
-          </Text>
+  {
+    profile?.locationName ??
+    "Ubicación no registrada"
+  }
+</Text>
 
         </View>
 
@@ -117,8 +235,11 @@ export default function ProfileScreen({
             </Text>
 
             <Text style={styles.infoValue}>
-              juan@email.com
-            </Text>
+  {
+    profile?.email ??
+    "Sin correo"
+  }
+</Text>
 
           </View>
 
@@ -139,14 +260,15 @@ export default function ProfileScreen({
           </View>
 
           <View>
-
             <Text style={styles.infoLabel}>
               Teléfono
             </Text>
-
             <Text style={styles.infoValue}>
-              +57 300 123 4567
-            </Text>
+  {
+    profile?.phone ??
+    "Sin teléfono"
+  }
+</Text>
 
           </View>
 
@@ -161,8 +283,8 @@ export default function ProfileScreen({
         <View style={styles.statCard}>
 
           <Text style={styles.statValue}>
-            24
-          </Text>
+  {animalsCount}
+</Text>
 
           <Text style={styles.statLabel}>
             Animales
@@ -173,8 +295,8 @@ export default function ProfileScreen({
         <View style={styles.statCard}>
 
           <Text style={styles.statValue}>
-            450L
-          </Text>
+  {productionsCount}
+</Text>
 
           <Text style={styles.statLabel}>
             Producción
@@ -185,8 +307,8 @@ export default function ProfileScreen({
         <View style={styles.statCard}>
 
           <Text style={styles.statValue}>
-            12
-          </Text>
+  {salesCount}
+</Text>
 
           <Text style={styles.statLabel}>
             Ventas
