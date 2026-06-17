@@ -25,6 +25,8 @@ import AnimalHealthRecordFormScreen from "../screens/animals/AnimalHealthRecordF
 import CreateHealthRecord from "../screens/animals/AnimalHealthRecordFormScreen";
 import EditHealthRecordScreen from "../screens/animals/EditHealthRecordScreen";
 import AnimalHealtEventsScreen from "../screens/animals/AnimalHealthEventsScreen";
+import EventDetailScreen from "../screens/animals/EventDetailScreen";
+import EventHistoryScreen from "../screens/animals/EventHistoryScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -56,6 +58,8 @@ export default function MainStack() {
       <Stack.Screen name="CreateHealthRecord" component={CreateHealthRecord} />
       <Stack.Screen name="EditHealthRecord" component={EditHealthRecordScreen} />
       <Stack.Screen name="AnimalHealthEvent" component={AnimalHealtEventsScreen} />
+      <Stack.Screen name="EventDetail" component={EventDetailScreen} />
+      <Stack.Screen name="EventHistory" component={EventHistoryScreen} />
     </Stack.Navigator>
   );
 }

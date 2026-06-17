@@ -1,20 +1,23 @@
 import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  TextInput,
-  Alert,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+    TextInput,
+    Alert,
+    Modal,
 } from "react-native";
 
+import { Calendar } from "react-native-calendars";
+
 import {
-  useState,
-  useCallback,
+    useState,
+    useCallback,
 } from "react";
 
 import {
-  useFocusEffect,
+    useFocusEffect,
 } from "@react-navigation/native";
 
 import Ionicons
@@ -24,6 +27,7 @@ import {
   getHealthEvents,
   createHealthEvent,
   updateHealthEvent,
+  deleteHealthEvent,
 } from "../../services/animalHealthService";
 
 export default function AnimalHealthEventsScreen({
@@ -39,11 +43,37 @@ export default function AnimalHealthEventsScreen({
   const [eventType, setEventType] =
     useState("");
 
-  const [scheduledDate, setScheduledDate] =
-    useState("");
+  const [selectedDate, setSelectedDate] =
+  useState("");
+
+  const [showModal, setShowModal] =
+  useState(false);
 
   const [loading, setLoading] =
     useState(false);
+
+    const [editingEventId, setEditingEventId] =
+  useState<string | null>(null);
+
+  // Crear objeto de eventos marcados para el calendario
+  const markedEvents: any = {};
+  
+  events.forEach((event: any) => {
+    const date = event.scheduledDate;
+    if (date) {
+      markedEvents[date] = {
+        marked: true,
+        dotColor: event.status === "Completado" ? "#16a34a" : "#3b82f6",
+      };
+    }
+  });
+
+  const selectedDayEvents =
+  events.filter(
+    (e) =>
+      e.scheduledDate?.split("T")[0] ===
+      selectedDate
+  );
 
   const loadEvents = async () => {
 
@@ -71,57 +101,127 @@ export default function AnimalHealthEventsScreen({
   );
 
   // ==========================
+  // EDITAR EVENTO
+  // ==========================
+  // EDITAR EVENTO
+  // ==========================
+
+  const handleEditEvent =
+    (event: any) => {
+
+      setEditingEventId(
+        event.healthEventId
+      );
+
+      setEventType(
+        event.eventType
+      );
+
+      setSelectedDate(
+        event.scheduledDate
+          .split("T")[0]
+      );
+
+      setShowModal(true);
+    };
+
+  // ==========================
+  // ELIMINAR EVENTO
+  // ==========================
+
+  const handleDeleteEvent =
+    async (event: any) => {
+
+      Alert.alert(
+        "Eliminar evento",
+        "¿Estás seguro?",
+        [
+          {
+            text: "Cancelar",
+            onPress: () => {},
+          },
+          {
+            text: "Eliminar",
+            onPress: async () => {
+
+              try {
+
+                await deleteHealthEvent(
+                  animalId,
+                  event.healthEventId
+                );
+
+                await loadEvents();
+
+              } catch (error) {
+
+                console.log(error);
+
+                Alert.alert(
+                  "Error",
+                  "No se pudo eliminar."
+                );
+              }
+            },
+            style: "destructive",
+          },
+        ]
+      );
+    };
+  // ==========================
   // CREAR EVENTO
   // ==========================
 
-  const handleCreateEvent =
-    async () => {
+  const handleSaveEvent =
+  async () => {
 
-      try {
+    try {
 
-        if (
-          !eventType.trim() ||
-          !scheduledDate.trim()
-        ) {
+      if (editingEventId) {
 
-          Alert.alert(
-            "Campos requeridos",
-            "Completa toda la información."
-          );
+        await updateHealthEvent(
+          animalId,
+          editingEventId,
+          {
+            eventType,
+            scheduledDate:
+              selectedDate,
+            status:
+              "Pendiente",
+          }
+        );
 
-          return;
-        }
-
-        setLoading(true);
+      } else {
 
         await createHealthEvent(
           animalId,
           {
             eventType,
-            scheduledDate,
-            status: "Pendiente",
+            scheduledDate:
+              selectedDate,
+            status:
+              "Pendiente",
           }
         );
-
-        setEventType("");
-        setScheduledDate("");
-
-        await loadEvents();
-
-      } catch (error) {
-
-        console.log(error);
-
-        Alert.alert(
-          "Error",
-          "No se pudo crear el evento."
-        );
-
-      } finally {
-
-        setLoading(false);
       }
-    };
+
+      setEditingEventId(null);
+
+      setEventType("");
+
+      setSelectedDate("");
+
+      setShowModal(false);
+
+      await loadEvents();
+
+    } catch (error) {
+
+      console.log(error);
+    }
+  };
+    
+  
 
   // ==========================
   // COMPLETAR EVENTO
@@ -161,6 +261,8 @@ export default function AnimalHealthEventsScreen({
     };
 
   return (
+
+    <>
 
     <ScrollView
       style={styles.container}
@@ -210,49 +312,134 @@ export default function AnimalHealthEventsScreen({
 
       {/* FORM */}
 
-      <View style={styles.formCard}>
+     <View style={styles.formCard}>
 
-        <Text style={styles.label}>
-          Tipo de evento
-        </Text>
+ 
 
-        <TextInput
-          style={styles.input}
-          placeholder="Vacuna, cirugía..."
-          value={eventType}
-          onChangeText={setEventType}
-        />
+  <Text style={styles.label}>
+    Selecciona una fecha
+  </Text>
 
-        <Text style={styles.label}>
-          Fecha programada
-        </Text>
+  <View style={styles.calendarContainer}>
 
-        <TextInput
-          style={styles.input}
-          placeholder="2026-06-30"
-          value={scheduledDate}
-          onChangeText={setScheduledDate}
-        />
+    <Calendar
+    minDate={new Date().toISOString().split("T")[0]}
+      onDayPress={(day) => {
 
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={handleCreateEvent}
-          disabled={loading}
+  setSelectedDate(
+    day.dateString
+  );
+
+  setShowModal(true);
+}}
+      markedDates={{
+        ...markedEvents,
+
+        [selectedDate]: {
+          ...(markedEvents[selectedDate] || {}),
+          selected: true,
+          selectedColor: "#8b5cf6",
+        },
+      }}
+      theme={{
+        calendarBackground: "#fff",
+
+        textSectionTitleColor: "#94a3b8",
+
+        selectedDayBackgroundColor:
+          "#8b5cf6",
+
+        selectedDayTextColor: "#fff",
+
+        todayTextColor: "#8b5cf6",
+
+        dayTextColor: "#111827",
+
+        monthTextColor: "#111827",
+
+        arrowColor: "#8b5cf6",
+
+        textMonthFontSize: 20,
+
+        textMonthFontWeight: "900",
+
+        textDayFontSize: 16,
+
+        textDayHeaderFontSize: 14,
+      }}
+    />
+
+  </View>
+
+  {
+    selectedDate !== "" && (
+
+      <View
+        style={
+          styles.dayEventsContainer
+        }
+      >
+
+        <Text
+          style={
+            styles.dayEventsTitle
+          }
         >
+          Eventos del día
+        </Text>
 
-          <Ionicons
-            name="add-circle"
-            size={22}
-            color="#fff"
-          />
+        {
+          selectedDayEvents.length === 0
+          ? (
+            <Text
+              style={
+                styles.noEventsText
+              }
+            >
+              No hay eventos
+            </Text>
+          )
+          : selectedDayEvents.map(
+              event => (
 
-          <Text style={styles.addButtonText}>
-            Programar Evento
-          </Text>
+            <View
+              key={
+                event.healthEventId
+              }
+              style={
+                styles.dayEventCard
+              }
+            >
 
-        </TouchableOpacity>
+              <Text
+                style={
+                  styles.dayEventTitle
+                }
+              >
+                {event.eventType}
+              </Text>
+
+              <Text
+                style={
+                  styles.dayEventDescription
+                }
+              >
+                {
+                  event.description
+                }
+              </Text>
+
+            </View>
+
+          ))
+        }
 
       </View>
+
+    )
+  }
+
+</View>
 
       {/* EVENTOS */}
 
@@ -261,6 +448,32 @@ export default function AnimalHealthEventsScreen({
         <Text style={styles.sectionTitle}>
           Eventos Programados
         </Text>
+
+        <TouchableOpacity
+          style={styles.historyButton}
+          onPress={() =>
+            navigation.navigate(
+              "EventHistory",
+              {
+                animalId,
+              }
+            )
+          }
+        >
+
+          <Ionicons
+            name="checkmark-done-circle"
+            size={20}
+            color="#fff"
+          />
+
+          <Text
+            style={styles.historyButtonText}
+          >
+            Ver Historial
+          </Text>
+
+        </TouchableOpacity>
 
         {
           events.length === 0 && (
@@ -274,15 +487,25 @@ export default function AnimalHealthEventsScreen({
               </Text>
 
             </View>
+            
           )
         }
 
         {
           events.map((event) => (
 
-            <View
+            <TouchableOpacity
               key={event.healthEventId}
               style={styles.eventCard}
+              onPress={() =>
+                navigation.navigate(
+                  "EventDetail",
+                  {
+                    event,
+                    animalId,
+                  }
+                )
+              }
             >
 
               <View
@@ -333,11 +556,48 @@ export default function AnimalHealthEventsScreen({
 
               </View>
 
+              <View
+                style={styles.eventActions}
+              >
+
+                <TouchableOpacity
+                  onPress={() =>
+                    handleEditEvent(event)
+                  }
+                >
+
+                  <Ionicons
+                    name="create-outline"
+                    size={26}
+                    color="#3b82f6"
+                  />
+
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() =>
+                    handleDeleteEvent(event)
+                  }
+                >
+
+                  <Ionicons
+                    name="trash-outline"
+                    size={26}
+                    color="#ef4444"
+                  />
+
+                </TouchableOpacity>
+
+              </View>
+
               {
                 event.status !==
                   "Completado" && (
 
                   <TouchableOpacity
+                    style={{
+                      marginLeft: 16,
+                    }}
                     onPress={() =>
                       handleCompleteEvent(
                         event
@@ -347,7 +607,7 @@ export default function AnimalHealthEventsScreen({
 
                     <Ionicons
                       name="checkmark-circle"
-                      size={28}
+                      size={32}
                       color="#16a34a"
                     />
 
@@ -355,7 +615,7 @@ export default function AnimalHealthEventsScreen({
                 )
               }
 
-            </View>
+            </TouchableOpacity>
           ))
         }
 
@@ -364,6 +624,81 @@ export default function AnimalHealthEventsScreen({
       <View style={{ height: 50 }} />
 
     </ScrollView>
+
+    <Modal
+      visible={showModal}
+      transparent
+      animationType="slide"
+    >
+
+      <View style={styles.modalOverlay}>
+
+        <View style={styles.modalContainer}>
+
+          <View style={styles.modalHeader}>
+
+            <Ionicons
+              name="calendar"
+              size={26}
+              color="#8b5cf6"
+            />
+
+            <Text style={styles.modalTitle}>
+              Nuevo Evento
+            </Text>
+
+          </View>
+
+          <Text style={styles.modalDate}>
+            {selectedDate}
+          </Text>
+
+          <TextInput
+            style={styles.modalInput}
+            placeholder="Vacuna, cirugía, control..."
+            value={eventType}
+            onChangeText={setEventType}
+          />
+
+          <TouchableOpacity
+            style={styles.modalSaveButton}
+            onPress={handleSaveEvent}
+          >
+
+            <Text
+              style={styles.modalSaveText}
+            >
+              {
+                editingEventId
+                  ? "Actualizar Evento"
+                  : "Guardar Evento"
+              }
+            </Text>
+
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.modalCancelButton}
+            onPress={() =>
+              setShowModal(false)
+            }
+          >
+
+            <Text
+              style={styles.modalCancelText}
+            >
+              Cancelar
+            </Text>
+
+          </TouchableOpacity>
+
+        </View>
+
+      </View>
+
+    </Modal>
+
+    </>
   );
 }
 
@@ -558,5 +893,219 @@ const styles = StyleSheet.create({
     textAlign: "center",
 
     color: "#64748b",
+  },
+  calendarContainer: {
+
+  marginTop: 10,
+
+  backgroundColor: "#fff",
+
+  borderRadius: 30,
+
+  overflow: "hidden",
+
+  shadowColor: "#000",
+
+  shadowOpacity: 0.08,
+
+  shadowRadius: 12,
+
+  elevation: 5,
+},
+
+selectedDateCard: {
+
+  marginTop: 16,
+
+  backgroundColor: "#f3f4f6",
+
+  borderRadius: 18,
+
+  padding: 14,
+
+  flexDirection: "row",
+
+  alignItems: "center",
+
+  justifyContent: "center",
+},
+
+selectedDateText: {
+
+  marginLeft: 10,
+
+  fontWeight: "800",
+
+  color: "#111827",
+
+  fontSize: 15,
+},
+modalOverlay: {
+
+  flex: 1,
+
+  backgroundColor:
+    "rgba(0,0,0,0.45)",
+
+  justifyContent: "center",
+
+  padding: 24,
+},
+
+modalContainer: {
+
+  backgroundColor: "#fff",
+
+  borderRadius: 30,
+
+  padding: 24,
+},
+
+modalHeader: {
+
+  flexDirection: "row",
+
+  alignItems: "center",
+
+  justifyContent: "center",
+},
+
+modalTitle: {
+
+  fontSize: 22,
+
+  fontWeight: "900",
+
+  color: "#111827",
+
+  marginLeft: 10,
+},
+
+modalDate: {
+
+  textAlign: "center",
+
+  marginTop: 16,
+
+  color: "#64748b",
+
+  fontWeight: "700",
+},
+
+modalInput: {
+
+  backgroundColor: "#f8fafc",
+
+  marginTop: 20,
+
+  borderRadius: 18,
+
+  padding: 18,
+
+  borderWidth: 1,
+
+  borderColor: "#e5e7eb",
+},
+
+modalSaveButton: {
+
+  backgroundColor: "#8b5cf6",
+
+  marginTop: 20,
+
+  borderRadius: 20,
+
+  paddingVertical: 16,
+
+  alignItems: "center",
+},
+
+modalSaveText: {
+
+  color: "#fff",
+
+  fontWeight: "900",
+
+  fontSize: 16,
+},
+
+modalCancelButton: {
+
+  marginTop: 10,
+
+  paddingVertical: 14,
+
+  alignItems: "center",
+},
+
+modalCancelText: {
+
+  color: "#64748b",
+
+  fontWeight: "700",
+},
+
+  eventActions: {
+    flexDirection: "row",
+    gap: 20,
+  },
+
+  dayEventsContainer: {
+    marginHorizontal: 20,
+    marginTop: 20,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 16,
+  },
+
+  dayEventsTitle: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#111827",
+    marginBottom: 12,
+  },
+
+  noEventsText: {
+    color: "#64748b",
+    textAlign: "center",
+    paddingVertical: 20,
+  },
+
+  dayEventCard: {
+    backgroundColor: "#f8fafc",
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: "#3b82f6",
+  },
+
+  dayEventTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#111827",
+  },
+
+  dayEventDescription: {
+    fontSize: 12,
+    color: "#64748b",
+    marginTop: 4,
+  },
+
+  historyButton: {
+    backgroundColor: "#16a34a",
+    borderRadius: 18,
+    paddingVertical: 14,
+    marginBottom: 20,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  historyButtonText: {
+    color: "#fff",
+    fontWeight: "800",
+    fontSize: 16,
+    marginLeft: 8,
   },
 });

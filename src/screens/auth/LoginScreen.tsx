@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 
 import { useState } from "react";
@@ -49,11 +50,16 @@ console.log(
 
 await login(res);
 
-  } catch (error) {
+  } catch (error: any) {
 
-    console.log(error);
+  Alert.alert(
+    "Error",
+    JSON.stringify(error?.response?.data || error?.message || error)
+  );
 
-  } finally {
+  console.log(error);
+
+} finally {
 
     setLoading(false);
   }

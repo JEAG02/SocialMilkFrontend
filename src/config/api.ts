@@ -1,7 +1,7 @@
 export const API_CONFIG = {
 
   BASE_URL:
-    "http://socialmilk.runasp.net/api/v1",
+    "http://192.168.60.77:5264/api/v1",
 
   ANIMALS:
     "/animals",

@@ -19,8 +19,13 @@ export async function login(
       identifier.trim()
     );
 
-  const response =
-    await fetch(
+  console.log(
+  "URL LOGIN:",
+  `${API_URL}/login`
+);
+
+const response =
+  await fetch(
       `${API_URL}/login`,
       {
         method: "POST",

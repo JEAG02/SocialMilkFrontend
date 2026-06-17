@@ -38,6 +38,9 @@ import {
   getSales,
 } from "../../services/salesService";
 
+import { pickAndUploadImage } from "../../services/cloudinaryService";
+import { Image } from "react-native";
+
 export default function ProfileScreen({
   navigation,
 }: any) {
@@ -45,6 +48,8 @@ export default function ProfileScreen({
   const { logout } = useAuth();
   const [profile, setProfile] =
   useState<any>(null);
+  const [profileImage, setProfileImage] =
+  useState<string | null>(null);
   const { animals } = useAnimals();
   
 const [animalsCount, setAnimalsCount] =
@@ -61,28 +66,51 @@ const [salesCount, setSalesCount] =
   loadStats();
 }, []);
 
+const handleChangePhoto =
+  async () => {
 
+    try {
+
+      const imageUrl =
+        await pickAndUploadImage();
+
+      if (!imageUrl) return;
+
+      setProfileImage(imageUrl);
+
+      // luego aquí puedes guardar
+      // la URL en tu backend
+
+    } catch (error) {
+
+      console.log(error);
+    }
+  };
 const loadProfile =
   async () => {
 
-  try {
+    try {
 
-    const data =
-      await getMyProfile();
+      const data =
+        await getMyProfile();
 
-    console.log(
-      "PROFILE:"
-    );
+      console.log("PROFILE:");
+      console.log(data);
 
-    console.log(data);
+      setProfile(data);
 
-    setProfile(data);
+      if (data.profileImageUrl) {
 
-  } catch (error) {
+        setProfileImage(
+          data.profileImageUrl
+        );
+      }
 
-    console.log(error);
-  }
-};
+    } catch (error) {
+
+      console.log(error);
+    }
+  };
 const loadStats =
   async () => {
 
@@ -162,15 +190,40 @@ const loadStats =
 
         <View style={styles.avatar}>
 
-          <Ionicons
+          
+  {
+    profileImage ? (
+
+      <Image
+        source={{
+          uri: profileImage,
+        }}
+        style={styles.avatar}
+      />
+
+    ) : (
+
+      <Ionicons
             name="person"
             size={60}
             color="#fff"
           />
 
-        </View>
+    )
+  }
 
+        </View>
+<TouchableOpacity
+  onPress={handleChangePhoto}
+>
+  <Ionicons
+    name="camera"
+    size={24}
+    color="#f59e0b"
+  />
+</TouchableOpacity>
         <Text style={styles.name}>
+          
   {
     profile?.fullName ??
     "Usuario"

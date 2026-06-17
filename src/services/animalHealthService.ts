@@ -209,9 +209,9 @@ export async function deleteHealthRecord(
   return response.json();
 }
 
-// ======================================
-// GET EVENTS
-// ======================================
+// =========================
+// HEALTH EVENTS
+// =========================
 
 export async function getHealthEvents(
   animalId: string
@@ -242,9 +242,35 @@ export async function getHealthEvents(
   return response.json();
 }
 
-// ======================================
-// CREATE EVENT
-// ======================================
+export async function getHealthEventById(
+  animalId: string,
+  eventId: string
+) {
+
+  const token =
+    await AsyncStorage.getItem(
+      "token"
+    );
+
+  const response = await fetch(
+    `${API_URL}/${animalId}/health-events/${eventId}`,
+    {
+      headers: {
+        Authorization:
+          `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+
+    throw new Error(
+      "Error obteniendo evento"
+    );
+  }
+
+  return response.json();
+}
 
 export async function createHealthEvent(
   animalId: string,
@@ -283,9 +309,43 @@ export async function createHealthEvent(
   return response.json();
 }
 
-// ======================================
-// DELETE EVENT
-// ======================================
+export async function updateHealthEvent(
+  animalId: string,
+  eventId: string,
+  event: any
+) {
+
+  const token =
+    await AsyncStorage.getItem(
+      "token"
+    );
+
+  const response = await fetch(
+    `${API_URL}/${animalId}/health-events/${eventId}`,
+    {
+      method: "PUT",
+
+      headers: {
+        "Content-Type":
+          "application/json",
+
+        Authorization:
+          `Bearer ${token}`,
+      },
+
+      body: JSON.stringify(event),
+    }
+  );
+
+  if (!response.ok) {
+
+    throw new Error(
+      "Error actualizando evento"
+    );
+  }
+
+  return response.json();
+}
 
 export async function deleteHealthEvent(
   animalId: string,
@@ -313,6 +373,33 @@ export async function deleteHealthEvent(
 
     throw new Error(
       "Error eliminando evento"
+    );
+  }
+
+  return response.json();
+}
+
+export async function getUpcomingHealthEvents() {
+
+  const token =
+    await AsyncStorage.getItem(
+      "token"
+    );
+
+  const response = await fetch(
+    `${API_URL}/health-events/upcoming`,
+    {
+      headers: {
+        Authorization:
+          `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+
+    throw new Error(
+      "Error obteniendo próximos eventos"
     );
   }
 
