@@ -6,200 +6,134 @@ import {
   TouchableOpacity,
   View,
   Alert,
+  ActivityIndicator,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 
 import { useState } from "react";
 
-import Ionicons
-from "@expo/vector-icons/Ionicons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
-import {
-  updateHealthRecord,
-} from "../../services/animalHealthService";
+import { updateHealthRecord } from "../../services/animalHealthService";
 
-export default function EditHealthRecordScreen({
-  route,
-  navigation,
-}: any) {
+export default function EditHealthRecordScreen({ route, navigation }: any) {
+  const { animalId, record } = route.params;
 
-  const {
-    animalId,
-    record,
-  } = route.params;
+  const [recordType, setRecordType] = useState(record.recordType);
 
-  const [
-    recordType,
-    setRecordType,
-  ] = useState(
-    record.recordType
-  );
+  const [description, setDescription] = useState(record.description);
 
-  const [
-    description,
-    setDescription,
-  ] = useState(
-    record.description
-  );
+  const handleUpdate = async () => {
+    try {
+      if (!recordType.trim() || !description.trim()) {
+        Alert.alert("Campos requeridos", "Completa toda la información.");
 
-  const handleUpdate =
-    async () => {
-
-      try {
-
-        if (
-          !recordType.trim() ||
-          !description.trim()
-        ) {
-
-          Alert.alert(
-            "Campos requeridos",
-            "Completa toda la información."
-          );
-
-          return;
-        }
-
-        await updateHealthRecord(
-          animalId,
-          record.healthRecordId,
-          {
-            recordType,
-            description,
-          }
-        );
-
-        Alert.alert(
-          "Éxito",
-          "Registro actualizado correctamente.",
-          [
-            {
-              text: "OK",
-
-              onPress: () =>
-                navigation.goBack(),
-            },
-          ]
-        );
-
-      } catch (error) {
-
-        console.log(error);
-
-        Alert.alert(
-          "Error",
-          "No se pudo actualizar."
-        );
+        return;
       }
-    };
+
+      await updateHealthRecord(animalId, record.healthRecordId, {
+        recordType,
+        description,
+      });
+
+      Alert.alert("Éxito", "Registro actualizado correctamente.", [
+        {
+          text: "OK",
+
+          onPress: () => navigation.goBack(),
+        },
+      ]);
+    } catch (error) {
+      console.log(error);
+
+      Alert.alert("Error", "No se pudo actualizar.");
+    }
+  };
 
   return (
-
-    <ScrollView
-      style={styles.container}
-      showsVerticalScrollIndicator={false}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
+      <FlatList
+        data={[{ id: "page" }]}
+        keyExtractor={(item) => item.id}
+        keyboardShouldPersistTaps="handled"
+        renderItem={() => null}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingBottom: 40,
+        }}
+        ListHeaderComponent={
+          <>
+            {/* HEADER */}
 
-      {/* HEADER */}
+            <View style={styles.header}>
+              <TouchableOpacity
+                style={styles.backButton}
+                onPress={() => navigation.goBack()}
+              >
+                <Ionicons name="arrow-back" size={24} color="#111827" />
+              </TouchableOpacity>
 
-      <View style={styles.header}>
+              <View style={styles.headerContent}>
+                <Ionicons name="create" size={34} color="#fff" />
 
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() =>
-            navigation.goBack()
-          }
-        >
+                <Text style={styles.headerTitle}>Editar Registro</Text>
 
-          <Ionicons
-            name="arrow-back"
-            size={24}
-            color="#111827"
-          />
+                <Text style={styles.headerSubtitle}>
+                  Modifica la información médica
+                </Text>
+              </View>
 
-        </TouchableOpacity>
+              <View style={styles.headerSpacer} />
+            </View>
 
-        <View style={styles.headerContent}>
+            {/* FORM */}
 
-          <Ionicons
-            name="create"
-            size={34}
-            color="#fff"
-          />
+            <View style={styles.form}>
+              <Text style={styles.label}>Tipo de registro</Text>
 
-          <Text style={styles.headerTitle}>
-            Editar Registro
-          </Text>
+              <TextInput
+                style={styles.input}
+                value={recordType}
+                onChangeText={setRecordType}
+                placeholder="Vacunación"
+              />
 
-          <Text style={styles.headerSubtitle}>
-            Modifica la información médica
-          </Text>
+              <Text style={styles.label}>Descripción</Text>
 
-        </View>
+              <TextInput
+                style={styles.textArea}
+                value={description}
+                onChangeText={setDescription}
+                multiline
+              />
 
-        <View style={styles.headerSpacer} />
+              <TouchableOpacity style={styles.button} onPress={handleUpdate}>
+                <Ionicons name="save-outline" size={20} color="#fff" />
 
-      </View>
+                <Text style={styles.buttonText}>Guardar Cambios</Text>
+              </TouchableOpacity>
+            </View>
 
-      {/* FORM */}
-
-      <View style={styles.form}>
-
-        <Text style={styles.label}>
-          Tipo de registro
-        </Text>
-
-        <TextInput
-          style={styles.input}
-          value={recordType}
-          onChangeText={setRecordType}
-          placeholder="Vacunación"
-        />
-
-        <Text style={styles.label}>
-          Descripción
-        </Text>
-
-        <TextInput
-          style={styles.textArea}
-          value={description}
-          onChangeText={setDescription}
-          multiline
-        />
-
-        <TouchableOpacity
-          style={styles.button}
-          onPress={handleUpdate}
-        >
-
-          <Ionicons
-            name="save-outline"
-            size={20}
-            color="#fff"
-          />
-
-          <Text style={styles.buttonText}>
-            Guardar Cambios
-          </Text>
-
-        </TouchableOpacity>
-
-      </View>
-
-      <View style={{ height: 50 }} />
-
-    </ScrollView>
+            <View style={{ height: 50 }} />
+          </>
+        }
+      />
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
     backgroundColor: "#f8fafc",
   },
 
   header: {
-
     backgroundColor: "#3b82f6",
 
     paddingTop: 60,
@@ -214,21 +148,18 @@ const styles = StyleSheet.create({
   },
 
   backButton: {
-
     width: 50,
     height: 50,
 
     borderRadius: 18,
 
-    backgroundColor:
-      "rgba(255,255,255,0.9)",
+    backgroundColor: "rgba(255,255,255,0.9)",
 
     justifyContent: "center",
     alignItems: "center",
   },
 
   headerContent: {
-
     flex: 1,
 
     alignItems: "center",
@@ -240,7 +171,6 @@ const styles = StyleSheet.create({
   },
 
   headerTitle: {
-
     color: "#fff",
 
     fontSize: 28,
@@ -250,7 +180,6 @@ const styles = StyleSheet.create({
   },
 
   headerSubtitle: {
-
     color: "#dbeafe",
 
     marginTop: 6,
@@ -262,7 +191,6 @@ const styles = StyleSheet.create({
   },
 
   label: {
-
     fontSize: 15,
 
     fontWeight: "700",
@@ -274,7 +202,6 @@ const styles = StyleSheet.create({
   },
 
   input: {
-
     backgroundColor: "#fff",
 
     borderRadius: 18,
@@ -290,7 +217,6 @@ const styles = StyleSheet.create({
   },
 
   textArea: {
-
     backgroundColor: "#fff",
 
     borderRadius: 18,
@@ -310,7 +236,6 @@ const styles = StyleSheet.create({
   },
 
   button: {
-
     backgroundColor: "#3b82f6",
 
     marginTop: 30,
@@ -328,7 +253,6 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-
     color: "#fff",
 
     fontSize: 16,

@@ -11,8 +11,9 @@ import { useState } from "react";
 import { register } from "../../services/authService";
 import { useAuth } from "../../context/AuthContext";
 
-export default function RegisterScreen({ navigation }: any) {
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
+export default function RegisterScreen({ navigation }: any) {
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -23,130 +24,111 @@ export default function RegisterScreen({ navigation }: any) {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
 
-  const handleChange = (
-    key: string,
-    value: string
-  ) => {
+  const handleChange = (key: string, value: string) => {
     setForm({
       ...form,
       [key]: value,
     });
   };
 
-const handleRegister = async () => {
+  const handleRegister = async () => {
+    try {
+      setLoading(true);
 
-  try {
+      const res = await register(
+        form.email,
+        form.password,
+        form.phone,
+        form.fullName,
+        form.locationName,
+      );
 
-    setLoading(true);
+      console.log(res);
 
-    const res = await register(
-      form.email,
-      form.password,
-      form.phone,
-      form.fullName,
-      form.locationName
-    );
-
-    console.log(res);
-
-    // LOGIN AUTOMÁTICO
-    await login(res);
-
-  } catch (error) {
-
-    console.log(error);
-
-  } finally {
-
-    setLoading(false);
-
-  }
-};
+      // LOGIN AUTOMÁTICO
+      await login(res);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <ScrollView style={styles.container}>
-
+    <KeyboardAwareScrollView
+      enableOnAndroid
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
       <View style={styles.header}>
-        <Text style={styles.title}>
-          Crear Cuenta
-        </Text>
+        <Text style={styles.title}>Crear Cuenta</Text>
 
-        <Text style={styles.subtitle}>
-          Únete a SocialMilk
-        </Text>
+        <Text style={styles.subtitle}>Únete a SocialMilk</Text>
       </View>
 
       <View style={styles.form}>
+        <Text style={styles.label}>Correo electrónico</Text>
 
         <TextInput
-          placeholder="Correo electrónico"
+          placeholder="ejemplo@gmail.com"
+          placeholderTextColor="#9ca3af"
           style={styles.input}
           value={form.email}
-          onChangeText={(v) =>
-            handleChange("email", v)
-          }
+          onChangeText={(v) => handleChange("email", v)}
         />
 
+        <Text style={styles.label}>Contraseña</Text>
+
         <TextInput
-          placeholder="Contraseña"
+          placeholder="********"
+          placeholderTextColor="#9ca3af"
           secureTextEntry
           style={styles.input}
           value={form.password}
-          onChangeText={(v) =>
-            handleChange("password", v)
-          }
+          onChangeText={(v) => handleChange("password", v)}
         />
+        <Text style={styles.label}>Teléfono</Text>
 
         <TextInput
-          placeholder="Teléfono"
+          placeholder="3001234567"
+          placeholderTextColor="#9ca3af"
+          keyboardType="phone-pad"
           style={styles.input}
           value={form.phone}
-          onChangeText={(v) =>
-            handleChange("phone", v)
-          }
+          onChangeText={(v) => handleChange("phone", v)}
         />
 
+        <Text style={styles.label}>Nombre completo</Text>
+
         <TextInput
-          placeholder="Nombre completo"
+          placeholder="Pepito Pérez"
+          placeholderTextColor="#9ca3af"
           style={styles.input}
           value={form.fullName}
-          onChangeText={(v) =>
-            handleChange("fullName", v)
-          }
+          onChangeText={(v) => handleChange("fullName", v)}
         />
+
+        <Text style={styles.label}>Ubicación</Text>
 
         <TextInput
-          placeholder="Ubicación"
+          placeholder="Manizales"
+          placeholderTextColor="#9ca3af"
           style={styles.input}
           value={form.locationName}
-          onChangeText={(v) =>
-            handleChange("locationName", v)
-          }
+          onChangeText={(v) => handleChange("locationName", v)}
         />
 
-        <TouchableOpacity
-          style={styles.button}
-          onPress={handleRegister}
-        >
+        <TouchableOpacity style={styles.button} onPress={handleRegister}>
           <Text style={styles.buttonText}>
-  {loading
-    ? "Creando cuenta..."
-    : "Registrarse"}
-</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() =>
-            navigation.navigate("Login")
-          }
-        >
-          <Text style={styles.loginText}>
-            ¿Ya tienes cuenta? Inicia sesión
+            {loading ? "Creando cuenta..." : "Registrarse"}
           </Text>
         </TouchableOpacity>
 
+        <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+          <Text style={styles.loginText}>¿Ya tienes cuenta? Inicia sesión</Text>
+        </TouchableOpacity>
       </View>
-    </ScrollView>
+    </KeyboardAwareScrollView>
   );
 }
 
@@ -179,6 +161,7 @@ const styles = StyleSheet.create({
 
   form: {
     padding: 24,
+    paddingBottom: 80,
   },
 
   input: {
@@ -210,5 +193,12 @@ const styles = StyleSheet.create({
     marginTop: 24,
     color: "#16a34a",
     fontWeight: "600",
+  },
+  label: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#374151",
+    marginBottom: 8,
+    marginLeft: 4,
   },
 });

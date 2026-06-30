@@ -7,57 +7,37 @@ import {
   ActivityIndicator,
 } from "react-native";
 
-import {
-  useState,
-} from "react";
+import { useState } from "react";
 
 import React from "react";
 
-import Ionicons
-from "@expo/vector-icons/Ionicons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
-import {
-  useFocusEffect,
-} from "@react-navigation/native";
+import { useFocusEffect } from "@react-navigation/native";
 
-import {
-  getAnimals,
-} from "../../services/animalsService";
+import { getAnimals } from "../../services/animalsService";
 
-export default function AnimalsScreen({
-  navigation,
-}: any) {
+export default function AnimalsScreen({ navigation }: any) {
+  const [animals, setAnimals] = useState<any[]>([]);
 
-  const [animals, setAnimals] =
-    useState<any[]>([]);
-
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
 
   // =========================
   // LOAD ANIMALS
   // =========================
 
-  const loadAnimals =
-    async () => {
-
+  const loadAnimals = async () => {
     try {
-
       setLoading(true);
 
-      const data =
-        await getAnimals();
+      const data = await getAnimals();
 
       console.log(data);
 
       setAnimals(data);
-
     } catch (error) {
-
       console.log(error);
-
     } finally {
-
       setLoading(false);
     }
   };
@@ -68,23 +48,15 @@ export default function AnimalsScreen({
 
   useFocusEffect(
     React.useCallback(() => {
-
       loadAnimals();
-
-    }, [])
+    }, []),
   );
 
   return (
-
-    <ScrollView
-      style={styles.container}
-      showsVerticalScrollIndicator={false}
-    >
-
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* HEADER */}
 
       <View style={styles.header}>
-
         {/* LEFT */}
 
         <View
@@ -94,81 +66,45 @@ export default function AnimalsScreen({
             flex: 1,
           }}
         >
-
           {/* BACK */}
 
           <TouchableOpacity
             style={styles.backButton}
-            onPress={() =>
-              navigation.goBack()
-            }
+            onPress={() => navigation.goBack()}
           >
-
-            <Ionicons
-              name="arrow-back"
-              size={24}
-              color="#111827"
-            />
-
+            <Ionicons name="arrow-back" size={24} color="#111827" />
           </TouchableOpacity>
 
           {/* TEXT */}
 
           <View>
+            <Text style={styles.subtitle}>Gestión ganadera</Text>
 
-            <Text style={styles.subtitle}>
-              Gestión ganadera
-            </Text>
-
-            <Text style={styles.title}>
-              Mis Animales
-            </Text>
-
+            <Text style={styles.title}>Mis Animales</Text>
           </View>
-
         </View>
 
         {/* ICON */}
 
         <View style={styles.headerIcon}>
-
-          <Ionicons
-            name="paw"
-            size={30}
-            color="#fff"
-          />
-
+          <Ionicons name="paw" size={30} color="#fff" />
         </View>
-
       </View>
 
       {/* ADD BUTTON */}
 
       <TouchableOpacity
         style={styles.addButton}
-        onPress={() =>
-          navigation.navigate(
-            "CreateAnimal"
-          )
-        }
+        onPress={() => navigation.navigate("CreateAnimal")}
       >
+        <Ionicons name="add" size={24} color="#fff" />
 
-        <Ionicons
-          name="add"
-          size={24}
-          color="#fff"
-        />
-
-        <Text style={styles.addButtonText}>
-          Agregar animal
-        </Text>
-
+        <Text style={styles.addButtonText}>Agregar animal</Text>
       </TouchableOpacity>
 
       {/* LOADING */}
 
       {loading && (
-
         <ActivityIndicator
           size="large"
           color="#f59e0b"
@@ -180,104 +116,63 @@ export default function AnimalsScreen({
 
       {/* EMPTY */}
 
-      {!loading &&
-        animals.length === 0 && (
-
+      {!loading && animals.length === 0 && (
         <View style={styles.emptyCard}>
+          <Ionicons name="paw-outline" size={60} color="#cbd5e1" />
 
-          <Ionicons
-            name="paw-outline"
-            size={60}
-            color="#cbd5e1"
-          />
-
-          <Text style={styles.emptyTitle}>
-            No hay animales
-          </Text>
+          <Text style={styles.emptyTitle}>No hay animales</Text>
 
           <Text style={styles.emptyText}>
-            Registra tu primer animal
-            para comenzar.
+            Registra tu primer animal para comenzar.
           </Text>
-
         </View>
       )}
 
       {/* LIST */}
 
       <View style={styles.content}>
-
         {animals.map((animal) => (
-
-          <View
-            key={animal.animalId}
-            style={styles.card}
-          >
-
+          <View key={animal.animalId} style={styles.card}>
             {/* TOP */}
 
             <View style={styles.cardTop}>
-
               <View style={styles.iconContainer}>
-
-                <Ionicons
-                  name="paw"
-                  size={28}
-                  color="#f59e0b"
-                />
-
+                <Ionicons name="paw" size={28} color="#f59e0b" />
               </View>
 
               <View style={{ flex: 1 }}>
+                <Text style={styles.animalName}>{animal.animalName}</Text>
 
-                <Text style={styles.animalName}>
-                  {animal.animalName}
-                </Text>
-
-                <Text style={styles.animalBreed}>
-                  {animal.animalBreed}
-                </Text>
-
+                <Text style={styles.animalBreed}>{animal.animalBreed}</Text>
               </View>
-
             </View>
 
             {/* INFO */}
 
             <View style={styles.infoRow}>
-
               <View style={styles.badge}>
-
-                <Text style={styles.badgeText}>
-                  {animal.animalType}
-                </Text>
-
+                <Text style={styles.badgeText}>{animal.animalType}</Text>
               </View>
 
               <View
                 style={[
                   styles.badge,
                   {
-                    backgroundColor:
-                      "#ffedd5",
+                    backgroundColor: "#ffedd5",
                   },
                 ]}
               >
-
                 <Text
                   style={[
                     styles.badgeText,
                     {
-                      color:
-                        "#f59e0b",
+                      color: "#f59e0b",
                     },
                   ]}
                 >
                   {animal.animalStatus}
                 </Text>
-
               </View>
-
             </View>
 
             {/* BUTTON */}
@@ -285,50 +180,31 @@ export default function AnimalsScreen({
             <TouchableOpacity
               style={styles.detailsButton}
               onPress={() =>
-                navigation.navigate(
-                  "AnimalDetails",
-                  {
-                    animalId:
-                      animal.animalId,
-                  }
-                )
+                navigation.navigate("AnimalDetails", {
+                  animalId: animal.animalId,
+                })
               }
             >
+              <Ionicons name="eye" size={18} color="#fff" />
 
-              <Ionicons
-                name="eye"
-                size={18}
-                color="#fff"
-              />
-
-              <Text
-                style={styles.detailsButtonText}
-              >
-                Ver detalles
-              </Text>
-
+              <Text style={styles.detailsButtonText}>Ver detalles</Text>
             </TouchableOpacity>
-
           </View>
         ))}
-
       </View>
 
       <View style={{ height: 60 }} />
-
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
     backgroundColor: "#f8fafc",
   },
 
   header: {
-
     backgroundColor: "#f59e0b",
 
     paddingTop: 70,
@@ -344,14 +220,12 @@ const styles = StyleSheet.create({
   },
 
   backButton: {
-
     width: 48,
     height: 48,
 
     borderRadius: 16,
 
-    backgroundColor:
-      "rgba(255,255,255,0.95)",
+    backgroundColor: "rgba(255,255,255,0.95)",
 
     justifyContent: "center",
     alignItems: "center",
@@ -373,21 +247,18 @@ const styles = StyleSheet.create({
   },
 
   headerIcon: {
-
     width: 64,
     height: 64,
 
     borderRadius: 22,
 
-    backgroundColor:
-      "rgba(255,255,255,0.2)",
+    backgroundColor: "rgba(255,255,255,0.2)",
 
     justifyContent: "center",
     alignItems: "center",
   },
 
   addButton: {
-
     backgroundColor: "#f59e0b",
 
     marginHorizontal: 22,
@@ -420,7 +291,6 @@ const styles = StyleSheet.create({
   },
 
   card: {
-
     backgroundColor: "#fff",
 
     borderRadius: 28,
@@ -443,7 +313,6 @@ const styles = StyleSheet.create({
   },
 
   iconContainer: {
-
     width: 62,
     height: 62,
 
@@ -475,7 +344,6 @@ const styles = StyleSheet.create({
   },
 
   badge: {
-
     backgroundColor: "#e2e8f0",
 
     paddingHorizontal: 14,
@@ -493,7 +361,6 @@ const styles = StyleSheet.create({
   },
 
   detailsButton: {
-
     backgroundColor: "#f59e0b",
 
     paddingVertical: 16,
@@ -513,7 +380,6 @@ const styles = StyleSheet.create({
   },
 
   emptyCard: {
-
     backgroundColor: "#fff",
 
     margin: 22,

@@ -1,374 +1,300 @@
+import React, { useRef, useState, useEffect } from "react";
+
 import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
   View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  FlatList,
   TextInput,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  Animated,
 } from "react-native";
 
-import { createAiInteraction }
-from "../../services/aiService";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
-import { useAuth }
-from "../../context/AuthContext";
+import { createAiInteraction } from "../../services/aiService";
+import { useAuth } from "../../context/AuthContext";
 
-import AsyncStorage
-from "@react-native-async-storage/async-storage";
+export default function AIScreen({ navigation }: any) {
+  const { user } = useAuth();
 
-import { useState, useEffect, } from "react";
+  const [message, setMessage] = useState("");
 
-import Ionicons
-from "@expo/vector-icons/Ionicons";
+  const [loadingAI, setLoadingAI] = useState(false);
 
-export default function AIScreen({
-  navigation,
-}: any) {
+  const flatListRef = useRef<FlatList>(null);
 
-  const [message, setMessage] =
-    useState("");
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
-    const { user } = useAuth();
+  const [messages, setMessages] = useState([
+    {
+      id: "1",
+      type: "ai",
+      text: "Hola 👋 Soy tu asistente virtual ganadero. ¿En qué puedo ayudarte hoy?",
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    },
+  ]);
 
-  const [profileId, setProfileId] =
-    useState(
-      "21ab04c9-b24a-4f99-06f1-08deb67a02fd"
-    );
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 350,
+      useNativeDriver: true,
+    }).start();
+  }, [messages]);
 
-  const [messages, setMessages] =
-    useState<any[]>([
-      {
-        id: 1,
+  useEffect(() => {
+    setTimeout(() => {
+      flatListRef.current?.scrollToEnd({
+        animated: true,
+      });
+    }, 120);
+  }, [messages]);
+
+  const askQuestion = async (question: string) => {
+    const userMessage = {
+      id: Date.now().toString(),
+      type: "user",
+      text: question,
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    };
+
+    setMessages((prev: any) => [...prev, userMessage]);
+
+    setLoadingAI(true);
+
+    try {
+      const response = await createAiInteraction(user.profileId, question);
+
+      const aiMessage = {
+        id: (Date.now() + 1).toString(),
         type: "ai",
         text:
-          "Hola 👋 Soy tu asistente virtual ganadero. ¿Qué deseas consultar?",
-      },
-    ]);
+          response.responseText ||
+          response.answer ||
+          response.message ||
+          "No se obtuvo respuesta.",
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      };
 
-  const askQuestion =
-    async (
-      question: string
-    ) => {
+      setMessages((prev: any) => [...prev, aiMessage]);
+    } catch {
+      setMessages((prev: any) => [
+        ...prev,
 
-      try {
+        {
+          id: (Date.now() + 2).toString(),
+          type: "ai",
+          text: "Ocurrió un error consultando la IA.",
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        },
+      ]);
+    }
 
-        // MENSAJE USUARIO
+    setLoadingAI(false);
+  };
 
-        setMessages(prev => [
+  const sendCustomQuestion = () => {
+    if (!message.trim()) return;
 
-          ...prev,
+    askQuestion(message);
 
-          {
-            id: Date.now(),
-            type: "user",
-            text: question,
-          },
-        ]);
+    setMessage("");
+  };
 
-        // LLAMADA API
-
-        const response =
-          await createAiInteraction(
-  user.profileId,
-  question
-);
-
-        console.log(
-          "AI RESPONSE:"
-        );
-
-        console.log(response);
-
-        // RESPUESTA IA
-
-        setMessages(prev => [
-
-          ...prev,
-
-          {
-            id:
-              Date.now() + 1,
-
-            type: "ai",
-
-            text:
-              response.responseText ||
-              response.answer ||
-              response.message ||
-              "No se recibió respuesta",
-          },
-        ]);
-
-      } catch (error) {
-
-        console.log(error);
-
-        setMessages(prev => [
-
-          ...prev,
-
-          {
-            id:
-              Date.now() + 1,
-
-            type: "ai",
-
-            text:
-              "No fue posible obtener una respuesta.",
-          },
-        ]);
-      }
-    };
-
-  const sendCustomQuestion =
-    () => {
-
-      if (
-        !message.trim()
-      ) {
-        return;
-      }
-
-      askQuestion(message);
-
-      setMessage("");
-    };
+  const quickQuestions = [
+    "Producción",
+    "Ventas",
+    "Inventario",
+    "Animales",
+    "Salud",
+    "Posts",
+  ];
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 25}
+      >
+        {/* HEADER */}
 
-      {/* HEADER */}
+        <View style={styles.header}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              flex: 1,
+            }}
+          >
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => navigation.goBack()}
+            >
+              <Ionicons name="arrow-back" size={24} color="#111827" />
+            </TouchableOpacity>
 
-      <View style={styles.header}>
+            <View>
+              <Text style={styles.subtitle}>Inteligencia Artificial</Text>
 
-        <View
+              <Text style={styles.title}>Asistente IA</Text>
+            </View>
+          </View>
+
+          <View style={styles.headerIcon}>
+            <Ionicons name="sparkles" size={28} color="#fff" />
+          </View>
+        </View>
+
+        {/* BOTONES */}
+
+        <View style={styles.quickContainer}>
+          <FlatList
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            data={quickQuestions}
+            keyExtractor={(item) => item}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.quickButton}
+                onPress={() => askQuestion(item.toLowerCase())}
+              >
+                <Text style={styles.quickText}>{item}</Text>
+              </TouchableOpacity>
+            )}
+          />
+        </View>
+
+        {/* CHAT */}
+
+        <Animated.View
           style={{
-            flexDirection: "row",
-            alignItems: "center",
             flex: 1,
+            opacity: fadeAnim,
           }}
         >
-
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() =>
-              navigation.goBack()
-            }
-          >
-
-            <Ionicons
-              name="arrow-back"
-              size={24}
-              color="#111827"
-            />
-
-          </TouchableOpacity>
-
-          <View>
-
-            <Text style={styles.subtitle}>
-              Inteligencia Artificial
-            </Text>
-
-            <Text style={styles.title}>
-              Asistente IA
-            </Text>
-
-          </View>
-
-        </View>
-
-        <View style={styles.headerIcon}>
-
-          <Ionicons
-            name="sparkles"
-            size={28}
-            color="#fff"
-          />
-
-        </View>
-
-      </View>
-
-      {/* QUICK ACTIONS */}
-
-      <ScrollView
-  horizontal
-  showsHorizontalScrollIndicator={false}
-  style={styles.quickContainer}
->
-
-  <TouchableOpacity
-    style={styles.quickButton}
-    onPress={() =>
-      askQuestion("produccion")
-    }
-  >
-    <Text style={styles.quickText}>
-      Producción
-    </Text>
-  </TouchableOpacity>
-
-  <TouchableOpacity
-    style={styles.quickButton}
-    onPress={() =>
-      askQuestion("ventas")
-    }
-  >
-    <Text style={styles.quickText}>
-      Ventas
-    </Text>
-  </TouchableOpacity>
-
-  <TouchableOpacity
-    style={styles.quickButton}
-    onPress={() =>
-      askQuestion("inventario")
-    }
-  >
-    <Text style={styles.quickText}>
-      Inventario
-    </Text>
-  </TouchableOpacity>
-
-  <TouchableOpacity
-    style={styles.quickButton}
-    onPress={() =>
-      askQuestion("animal")
-    }
-  >
-    <Text style={styles.quickText}>
-      Animales
-    </Text>
-  </TouchableOpacity>
-
-  <TouchableOpacity
-    style={styles.quickButton}
-    onPress={() =>
-      askQuestion("salud")
-    }
-  >
-    <Text style={styles.quickText}>
-      Salud
-    </Text>
-  </TouchableOpacity>
-
-  <TouchableOpacity
-    style={styles.quickButton}
-    onPress={() =>
-      askQuestion("post")
-    }
-  >
-    <Text style={styles.quickText}>
-      Posts
-    </Text>
-  </TouchableOpacity>
-
-</ScrollView>
-
-      {/* CHAT */}
-
-      <ScrollView
-        style={styles.chatContainer}
-        showsVerticalScrollIndicator={false}
-      >
-
-        {messages.map((msg) => (
-
-          <View
-            key={msg.id}
-            style={[
-              styles.messageRow,
-
-              msg.type === "user"
-                ? styles.userRow
-                : styles.aiRow,
-            ]}
-          >
-
-            {msg.type === "ai" && (
-
-              <View style={styles.aiAvatar}>
-
-                <Ionicons
-                  name="sparkles"
-                  size={22}
-                  color="#06b6d4"
-                />
-
-              </View>
-            )}
-
-            <View
-              style={[
-                styles.messageBubble,
-
-                msg.type === "user"
-                  ? styles.userBubble
-                  : styles.aiBubble,
-              ]}
-            >
-
-              <Text
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            keyExtractor={(item: any) => item.id}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{
+              padding: 20,
+              paddingBottom: 10,
+            }}
+            renderItem={({ item }: any) => (
+              <View
                 style={[
-                  styles.messageText,
-
-                  msg.type === "user"
-                    ? styles.userText
-                    : styles.aiText,
+                  styles.messageRow,
+                  item.type === "user" ? styles.userRow : styles.aiRow,
                 ]}
               >
-                {msg.text}
+                {item.type === "ai" && (
+                  <View style={styles.aiAvatar}>
+                    <Ionicons name="sparkles" size={20} color="#06b6d4" />
+                  </View>
+                )}
+
+                <View
+                  style={[
+                    styles.messageBubble,
+                    item.type === "user" ? styles.userBubble : styles.aiBubble,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.messageText,
+                      item.type === "user" ? styles.userText : styles.aiText,
+                    ]}
+                  >
+                    {item.text}
+                  </Text>
+
+                  <Text
+                    style={{
+                      marginTop: 8,
+                      fontSize: 11,
+                      opacity: 0.6,
+                      alignSelf: "flex-end",
+                    }}
+                  >
+                    {item.time}
+                  </Text>
+                </View>
+              </View>
+            )}
+          />
+
+          {loadingAI && (
+            <View
+              style={{
+                flexDirection: "row",
+                paddingHorizontal: 25,
+                marginBottom: 12,
+                alignItems: "center",
+              }}
+            >
+              <Ionicons name="sparkles" size={18} color="#06b6d4" />
+
+              <Text
+                style={{
+                  marginLeft: 10,
+                  color: "#64748b",
+                  fontStyle: "italic",
+                }}
+              >
+                La IA está escribiendo...
               </Text>
-
             </View>
+          )}
+        </Animated.View>
 
-          </View>
-        ))}
+        {/* INPUT */}
 
-        <View style={{ height: 120 }} />
+        <View style={styles.inputContainer}>
+          <TextInput
+            value={message}
+            onChangeText={setMessage}
+            placeholder="Escribe una pregunta..."
+            placeholderTextColor="#94a3b8"
+            style={styles.input}
+            multiline
+          />
 
-      </ScrollView>
-
-      {/* INPUT */}
-
-      <View style={styles.inputContainer}>
-
-        <TextInput
-          placeholder="Escribe tu pregunta..."
-          placeholderTextColor="#94a3b8"
-          value={message}
-          onChangeText={setMessage}
-          style={styles.input}
-        />
-
-        <TouchableOpacity
-  style={styles.sendButton}
-  onPress={sendCustomQuestion}
->
-
-  <Ionicons
-    name="send"
-    size={22}
-    color="#fff"
-  />
-
-</TouchableOpacity>
-
-      </View>
-
-    </View>
+          <TouchableOpacity
+            style={styles.sendButton}
+            onPress={sendCustomQuestion}
+          >
+            <Ionicons name="send" size={22} color="#fff" />
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
     backgroundColor: "#f1f5f9",
   },
 
   header: {
-
     backgroundColor: "#06b6d4",
 
     paddingTop: 70,
@@ -384,14 +310,12 @@ const styles = StyleSheet.create({
   },
 
   backButton: {
-
     width: 48,
     height: 48,
 
     borderRadius: 16,
 
-    backgroundColor:
-      "rgba(255,255,255,0.92)",
+    backgroundColor: "rgba(255,255,255,0.92)",
 
     justifyContent: "center",
     alignItems: "center",
@@ -412,27 +336,24 @@ const styles = StyleSheet.create({
   },
 
   headerIcon: {
-
     width: 60,
     height: 60,
 
     borderRadius: 20,
 
-    backgroundColor:
-      "rgba(255,255,255,0.18)",
+    backgroundColor: "rgba(255,255,255,0.18)",
 
     justifyContent: "center",
     alignItems: "center",
   },
 
   quickContainer: {
-    paddingLeft: 22,
-    marginTop: 20,
-    maxHeight: 60,
+    paddingVertical: 16,
+    paddingLeft: 20,
+    backgroundColor: "#f1f5f9",
   },
 
   quickButton: {
-
     backgroundColor: "#fff",
 
     paddingHorizontal: 18,
@@ -443,7 +364,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
 
     shadowColor: "#000",
-    shadowOpacity: 0.04,
+    shadowOpacity: 0.05,
     shadowRadius: 8,
 
     elevation: 2,
@@ -454,15 +375,9 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 
-  chatContainer: {
-    flex: 1,
-    paddingHorizontal: 22,
-    paddingTop: 20,
-  },
-
   messageRow: {
-    marginBottom: 18,
     flexDirection: "row",
+    marginBottom: 18,
     alignItems: "flex-end",
   },
 
@@ -475,11 +390,10 @@ const styles = StyleSheet.create({
   },
 
   aiAvatar: {
-
     width: 42,
     height: 42,
 
-    borderRadius: 14,
+    borderRadius: 21,
 
     backgroundColor: "#ecfeff",
 
@@ -490,21 +404,28 @@ const styles = StyleSheet.create({
   },
 
   messageBubble: {
-
     maxWidth: "78%",
 
-    borderRadius: 24,
+    borderRadius: 22,
 
-    paddingHorizontal: 18,
-    paddingVertical: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
   },
 
   aiBubble: {
     backgroundColor: "#fff",
+    borderTopLeftRadius: 8,
+
+    shadowColor: "#000",
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+
+    elevation: 2,
   },
 
   userBubble: {
     backgroundColor: "#06b6d4",
+    borderTopRightRadius: 8,
   },
 
   messageText: {
@@ -521,45 +442,38 @@ const styles = StyleSheet.create({
   },
 
   inputContainer: {
-
-    position: "absolute",
-
-    bottom: 0,
-    left: 0,
-    right: 0,
+    flexDirection: "row",
+    alignItems: "flex-end",
 
     backgroundColor: "#fff",
 
-    flexDirection: "row",
-    alignItems: "center",
-
-    paddingHorizontal: 18,
-    paddingVertical: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
 
     borderTopWidth: 1,
-    borderTopColor: "#e2e8f0",
+    borderTopColor: "#e5e7eb",
   },
 
   input: {
-
     flex: 1,
 
     backgroundColor: "#f8fafc",
 
-    borderRadius: 18,
+    borderRadius: 20,
 
     paddingHorizontal: 18,
-    paddingVertical: 16,
+    paddingVertical: 14,
 
     fontSize: 15,
 
-    marginRight: 14,
+    maxHeight: 120,
+
+    marginRight: 12,
   },
 
   sendButton: {
-
-    width: 56,
-    height: 56,
+    width: 54,
+    height: 54,
 
     borderRadius: 18,
 
@@ -567,5 +481,8 @@ const styles = StyleSheet.create({
 
     justifyContent: "center",
     alignItems: "center",
+  },
+  chatWrapper: {
+    flex: 1,
   },
 });

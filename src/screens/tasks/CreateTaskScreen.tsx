@@ -8,47 +8,25 @@ import {
   View,
 } from "react-native";
 
-import {
-  useState,
-} from "react";
+import { useState } from "react";
 
-import Ionicons
-from "@expo/vector-icons/Ionicons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
-import {
-  useTasks,
-} from "../../context/TasksContext";
+import { useTasks } from "../../context/TasksContext";
 
-export default function CreateTaskScreen({
-  navigation,
-}: any) {
+export default function CreateTaskScreen({ navigation }: any) {
+  const { createTask } = useTasks();
 
-  const {
-    createTask,
-  } = useTasks();
+  const [title, setTitle] = useState("");
 
-  const [title, setTitle] =
-    useState("");
+  const [description, setDescription] = useState("");
 
-  const [
-    description,
-    setDescription,
-  ] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const [loading, setLoading] =
-    useState(false);
-
-  const handleCreate =
-    async () => {
-
+  const handleCreate = async () => {
     try {
-
       if (!title.trim()) {
-
-        Alert.alert(
-          "Error",
-          "El título es obligatorio."
-        );
+        Alert.alert("Error", "El título es obligatorio.");
 
         return;
       }
@@ -56,87 +34,51 @@ export default function CreateTaskScreen({
       setLoading(true);
 
       await createTask({
-
         taskTitle: title,
 
-        taskDescription:
-          description,
+        taskDescription: description,
 
         priority: 1,
       });
 
-      Alert.alert(
-        "Éxito",
-        "Tarea creada correctamente."
-      );
+      Alert.alert("Éxito", "Tarea creada correctamente.");
 
       setTitle("");
       setDescription("");
 
       navigation.goBack();
-
     } catch (error) {
-
       console.log(error);
 
-      Alert.alert(
-        "Error",
-        "No se pudo crear la tarea."
-      );
-
+      Alert.alert("Error", "No se pudo crear la tarea.");
     } finally {
-
       setLoading(false);
     }
   };
 
   return (
-
-    <ScrollView
-      style={styles.container}
-      showsVerticalScrollIndicator={false}
-    >
-
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* HEADER */}
 
       <View style={styles.header}>
-
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() =>
-            navigation.goBack()
-          }
+          onPress={() => navigation.goBack()}
         >
-
-          <Ionicons
-            name="arrow-back"
-            size={24}
-            color="#111827"
-          />
-
+          <Ionicons name="arrow-back" size={24} color="#111827" />
         </TouchableOpacity>
 
         <View>
+          <Text style={styles.subtitle}>Gestión de tareas</Text>
 
-          <Text style={styles.subtitle}>
-            Gestión de tareas
-          </Text>
-
-          <Text style={styles.title}>
-            Nueva tarea
-          </Text>
-
+          <Text style={styles.title}>Nueva tarea</Text>
         </View>
-
       </View>
 
       {/* FORM */}
 
       <View style={styles.form}>
-
-        <Text style={styles.label}>
-          Título
-        </Text>
+        <Text style={styles.label}>Título</Text>
 
         <TextInput
           placeholder="Ej: Vacunar ganado"
@@ -146,24 +88,17 @@ export default function CreateTaskScreen({
           onChangeText={setTitle}
         />
 
-        <Text style={styles.label}>
-          Descripción
-        </Text>
+        <Text style={styles.label}>Descripción</Text>
 
         <TextInput
           placeholder="Describe la tarea..."
           placeholderTextColor="#94a3b8"
-          style={[
-            styles.input,
-            styles.textArea,
-          ]}
+          style={[styles.input, styles.textArea]}
           multiline
           numberOfLines={5}
           textAlignVertical="top"
           value={description}
-          onChangeText={
-            setDescription
-          }
+          onChangeText={setDescription}
         />
 
         <TouchableOpacity
@@ -171,34 +106,22 @@ export default function CreateTaskScreen({
           onPress={handleCreate}
           disabled={loading}
         >
+          <Ionicons name="add-circle" size={22} color="#fff" />
 
-          <Ionicons
-            name="add-circle"
-            size={22}
-            color="#fff"
-          />
-
-          <Text style={styles.buttonText}>
-            Crear tarea
-          </Text>
-
+          <Text style={styles.buttonText}>Crear tarea</Text>
         </TouchableOpacity>
-
       </View>
-
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
     backgroundColor: "#f1f5f9",
   },
 
   header: {
-
     backgroundColor: "#3b82f6",
 
     paddingTop: 60,
@@ -213,14 +136,12 @@ const styles = StyleSheet.create({
   },
 
   backButton: {
-
     width: 50,
     height: 50,
 
     borderRadius: 18,
 
-    backgroundColor:
-      "rgba(255,255,255,0.95)",
+    backgroundColor: "rgba(255,255,255,0.95)",
 
     justifyContent: "center",
     alignItems: "center",
@@ -254,7 +175,6 @@ const styles = StyleSheet.create({
   },
 
   input: {
-
     backgroundColor: "#fff",
 
     borderRadius: 20,
@@ -279,7 +199,6 @@ const styles = StyleSheet.create({
   },
 
   button: {
-
     backgroundColor: "#3b82f6",
 
     paddingVertical: 18,

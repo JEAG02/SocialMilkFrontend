@@ -1,165 +1,102 @@
 import {
   ActivityIndicator,
   Alert,
-  ScrollView,
   StyleSheet,
+  FlatList,
   Text,
   TouchableOpacity,
   View,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 
-import AsyncStorage
-from "@react-native-async-storage/async-storage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import Ionicons
-from "@expo/vector-icons/Ionicons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 import {
   getProductionById,
   deleteProduction,
 } from "../../services/productionService";
 
-import {
-  useAnimals,
-} from "../../context/AnimalsContext";
+import { useAnimals } from "../../context/AnimalsContext";
 
-export default function ProductionDetailScreen({
-  route,
-  navigation,
-}: any) {
+export default function ProductionDetailScreen({ route, navigation }: any) {
+  const { productionId } = route.params;
 
-  const { productionId } =
-    route.params;
+  const { animals } = useAnimals();
 
-  const { animals } =
-    useAnimals();
+  const [production, setProduction] = useState<any>(null);
 
-  const [
-    production,
-    setProduction,
-  ] = useState<any>(null);
-
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
 
   // =========================
   // LOAD PRODUCTION
   // =========================
 
-  const loadProduction =
-    async () => {
-
+  const loadProduction = async () => {
     try {
-
-      const token =
-        await AsyncStorage.getItem(
-          "token"
-        );
+      const token = await AsyncStorage.getItem("token");
 
       if (!token) {
-
-        throw new Error(
-          "Token no encontrado"
-        );
+        throw new Error("Token no encontrado");
       }
 
-      const data =
-        await getProductionById(
-          productionId
-        );
+      const data = await getProductionById(productionId);
 
       setProduction(data);
-
     } catch (error) {
-
       console.log(error);
 
-      Alert.alert(
-        "Error",
-        "No se pudo cargar la producción"
-      );
-
+      Alert.alert("Error", "No se pudo cargar la producción");
     } finally {
-
       setLoading(false);
     }
   };
 
   useEffect(() => {
-
     loadProduction();
-
   }, []);
 
   // =========================
   // DELETE PRODUCTION
   // =========================
 
-  const handleDelete =
-    async () => {
+  const handleDelete = async () => {
+    Alert.alert("Eliminar", "¿Deseas eliminar esta producción?", [
+      {
+        text: "Cancelar",
+        style: "cancel",
+      },
 
-    Alert.alert(
-      "Eliminar",
-      "¿Deseas eliminar esta producción?",
-      [
+      {
+        text: "Eliminar",
 
-        {
-          text: "Cancelar",
-          style: "cancel",
-        },
+        style: "destructive",
 
-        {
-          text: "Eliminar",
+        onPress: async () => {
+          try {
+            const token = await AsyncStorage.getItem("token");
 
-          style: "destructive",
-
-          onPress: async () => {
-
-            try {
-
-              const token =
-                await AsyncStorage.getItem(
-                  "token"
-                );
-
-              if (!token) {
-
-                throw new Error(
-                  "Token no encontrado"
-                );
-              }
-
-              await deleteProduction(
-                production.productionId
-              );
-
-              Alert.alert(
-                "Éxito",
-                "Producción eliminada"
-              );
-
-              navigation.navigate(
-                "Production"
-              );
-
-            } catch (error) {
-
-              console.log(error);
-
-              Alert.alert(
-                "Error",
-                "No se pudo eliminar"
-              );
+            if (!token) {
+              throw new Error("Token no encontrado");
             }
-          },
+
+            await deleteProduction(production.productionId);
+
+            Alert.alert("Éxito", "Producción eliminada");
+
+            navigation.navigate("Production");
+          } catch (error) {
+            console.log(error);
+
+            Alert.alert("Error", "No se pudo eliminar");
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
   // =========================
@@ -167,16 +104,9 @@ export default function ProductionDetailScreen({
   // =========================
 
   if (loading) {
-
     return (
-
       <View style={styles.loader}>
-
-        <ActivityIndicator
-          size="large"
-          color="#3b82f6"
-        />
-
+        <ActivityIndicator size="large" color="#3b82f6" />
       </View>
     );
   }
@@ -185,160 +115,106 @@ export default function ProductionDetailScreen({
   // ANIMAL DATA
   // =========================
 
-  const animal =
-    animals.find(
-      (a: any) =>
-        a.animalId ===
-        production?.animalId
-    );
+  const animal = animals.find((a: any) => a.animalId === production?.animalId);
 
   // =========================
   // UI
   // =========================
 
   return (
-
-    <ScrollView
-      style={styles.container}
-      showsVerticalScrollIndicator={false}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
+      <FlatList
+        data={[{ id: "page" }]}
+        keyExtractor={(item) => item.id}
+        keyboardShouldPersistTaps="handled"
+        renderItem={() => null}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingBottom: 40,
+        }}
+        ListHeaderComponent={
+          <>
+            {/* HEADER */}
 
-      {/* HEADER */}
+            <View style={styles.header}>
+              <TouchableOpacity
+                onPress={() => navigation.goBack()}
+                style={styles.backButton}
+              >
+                <Ionicons name="arrow-back" size={24} color="#111827" />
+              </TouchableOpacity>
 
-      <View style={styles.header}>
+              <View>
+                <Text style={styles.subtitle}>Detalle</Text>
 
-        <TouchableOpacity
-          onPress={() =>
-            navigation.goBack()
-          }
-          style={styles.backButton}
-        >
+                <Text style={styles.title}>Producción</Text>
+              </View>
+            </View>
 
-          <Ionicons
-            name="arrow-back"
-            size={24}
-            color="#111827"
-          />
+            {/* CARD */}
 
-        </TouchableOpacity>
+            <View style={styles.card}>
+              <Text style={styles.label}>Animal</Text>
 
-        <View>
+              <Text style={styles.value}>
+                {animal?.animalName || "Animal desconocido"}
+              </Text>
 
-          <Text style={styles.subtitle}>
-            Detalle
-          </Text>
+              <Text style={styles.label}>Litros producidos</Text>
 
-          <Text style={styles.title}>
-            Producción
-          </Text>
+              <Text style={styles.value}>{production.milkVolumeLiters} L</Text>
 
-        </View>
+              <Text style={styles.label}>Turno</Text>
 
-      </View>
+              <Text style={styles.value}>{production.shift}</Text>
 
-      {/* CARD */}
+              <Text style={styles.label}>Fecha</Text>
 
-      <View style={styles.card}>
+              <Text style={styles.value}>
+                {new Date(production.productionDate).toLocaleDateString()}
+              </Text>
+            </View>
 
-        <Text style={styles.label}>
-          Animal
-        </Text>
+            {/* EDIT BUTTON */}
 
-        <Text style={styles.value}>
-          {
-            animal?.animalName ||
-            "Animal desconocido"
-          }
-        </Text>
+            {production && (
+              <TouchableOpacity
+                style={styles.editButton}
+                onPress={() =>
+                  navigation.navigate("UpdateProduction", {
+                    production,
+                  })
+                }
+              >
+                <Ionicons name="create-outline" size={22} color="#fff" />
 
-        <Text style={styles.label}>
-          Litros producidos
-        </Text>
+                <Text style={styles.editButtonText}>Editar producción</Text>
+              </TouchableOpacity>
+            )}
 
-        <Text style={styles.value}>
-          {
-            production.milkVolumeLiters
-          } L
-        </Text>
+            {/* DELETE BUTTON */}
 
-        <Text style={styles.label}>
-          Turno
-        </Text>
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={handleDelete}
+            >
+              <Ionicons name="trash-outline" size={22} color="#fff" />
 
-        <Text style={styles.value}>
-          {production.shift}
-        </Text>
+              <Text style={styles.deleteButtonText}>Eliminar producción</Text>
+            </TouchableOpacity>
 
-        <Text style={styles.label}>
-          Fecha
-        </Text>
-
-        <Text style={styles.value}>
-          {
-            new Date(
-              production.productionDate
-            ).toLocaleDateString()
-          }
-        </Text>
-
-      </View>
-
-      {/* EDIT BUTTON */}
-
-      {production && (
-
-        <TouchableOpacity
-          style={styles.editButton}
-          onPress={() =>
-            navigation.navigate(
-              "UpdateProduction",
-              {
-                production,
-              }
-            )
-          }
-        >
-
-          <Ionicons
-            name="create-outline"
-            size={22}
-            color="#fff"
-          />
-
-          <Text style={styles.editButtonText}>
-            Editar producción
-          </Text>
-
-        </TouchableOpacity>
-      )}
-
-      {/* DELETE BUTTON */}
-
-      <TouchableOpacity
-        style={styles.deleteButton}
-        onPress={handleDelete}
-      >
-
-        <Ionicons
-          name="trash-outline"
-          size={22}
-          color="#fff"
-        />
-
-        <Text style={styles.deleteButtonText}>
-          Eliminar producción
-        </Text>
-
-      </TouchableOpacity>
-
-      <View style={{ height: 40 }} />
-
-    </ScrollView>
+            <View style={{ height: 40 }} />
+          </>
+        }
+      />
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
     backgroundColor: "#f1f5f9",
@@ -351,7 +227,6 @@ const styles = StyleSheet.create({
   },
 
   header: {
-
     backgroundColor: "#3b82f6",
 
     paddingTop: 70,
@@ -366,14 +241,12 @@ const styles = StyleSheet.create({
   },
 
   backButton: {
-
     width: 48,
     height: 48,
 
     borderRadius: 16,
 
-    backgroundColor:
-      "rgba(255,255,255,0.92)",
+    backgroundColor: "rgba(255,255,255,0.92)",
 
     justifyContent: "center",
     alignItems: "center",
@@ -394,7 +267,6 @@ const styles = StyleSheet.create({
   },
 
   card: {
-
     backgroundColor: "#fff",
 
     margin: 24,
@@ -423,7 +295,6 @@ const styles = StyleSheet.create({
   },
 
   editButton: {
-
     backgroundColor: "#3b82f6",
 
     paddingVertical: 18,
@@ -439,7 +310,6 @@ const styles = StyleSheet.create({
   },
 
   editButtonText: {
-
     color: "#fff",
 
     fontSize: 16,
@@ -450,7 +320,6 @@ const styles = StyleSheet.create({
   },
 
   deleteButton: {
-
     backgroundColor: "#ef4444",
 
     paddingVertical: 18,
@@ -467,7 +336,6 @@ const styles = StyleSheet.create({
   },
 
   deleteButtonText: {
-
     color: "#fff",
 
     fontSize: 16,

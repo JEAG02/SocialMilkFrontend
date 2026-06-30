@@ -1,52 +1,32 @@
-import AsyncStorage
-from "@react-native-async-storage/async-storage";
-import {
-  API_CONFIG
-} from "../config/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_CONFIG } from "../config/api";
 
-const API_URL =
-  `${API_CONFIG.BASE_URL}${API_CONFIG.POSTS}`;
+const API_URL = `${API_CONFIG.BASE_URL}${API_CONFIG.POSTS}`;
 
 // =========================
 // GET FEED
 // =========================
 
 export async function getFeed() {
+  const token = await AsyncStorage.getItem("token");
 
-  const token =
-    await AsyncStorage.getItem(
-      "token"
-    );
-
-  const response =
-    await fetch(
-      `${API_URL}?page=1&pageSize=20`,
-      {
-        headers: {
-          Authorization:
-            `Bearer ${token}`,
-        },
-      }
-    );
+  const response = await fetch(`${API_URL}?page=1&pageSize=20`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
   if (!response.ok) {
-
-    const error =
-      await response.text();
+    const error = await response.text();
 
     console.log(error);
 
-    throw new Error(
-      "Error obteniendo feed"
-    );
+    throw new Error("Error obteniendo feed");
   }
 
-  const data =
-    await response.json();
+  const data = await response.json();
 
-  console.log(
-    "FEED RESPONSE:"
-  );
+  console.log("FEED RESPONSE:");
 
   console.log(data);
 
@@ -77,45 +57,29 @@ export async function getFeed() {
 // CREATE POST
 // =========================
 
-export async function createPost(
-  content: string
-) {
+export async function createPost(content: string) {
+  const token = await AsyncStorage.getItem("token");
 
-  const token =
-    await AsyncStorage.getItem(
-      "token"
-    );
+  const response = await fetch(API_URL, {
+    method: "POST",
 
-  const response =
-    await fetch(
-      API_URL,
-      {
-        method: "POST",
+    headers: {
+      "Content-Type": "application/json",
 
-        headers: {
-          "Content-Type":
-            "application/json",
+      Authorization: `Bearer ${token}`,
+    },
 
-          Authorization:
-            `Bearer ${token}`,
-        },
-
-        body: JSON.stringify({
-          content,
-        }),
-      }
-    );
+    body: JSON.stringify({
+      content,
+    }),
+  });
 
   if (!response.ok) {
-
-    const error =
-      await response.text();
+    const error = await response.text();
 
     console.log(error);
 
-    throw new Error(
-      "Error creando post"
-    );
+    throw new Error("Error creando post");
   }
 
   return response.json();
@@ -125,41 +89,25 @@ export async function createPost(
 // UPDATE POST
 // =========================
 
-export async function updatePost(
-  postId: string,
-  content: string
-) {
+export async function updatePost(postId: string, content: string) {
+  const token = await AsyncStorage.getItem("token");
 
-  const token =
-    await AsyncStorage.getItem(
-      "token"
-    );
+  const response = await fetch(`${API_URL}/${postId}`, {
+    method: "PUT",
 
-  const response =
-    await fetch(
-      `${API_URL}/${postId}`,
-      {
-        method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
 
-        headers: {
-          "Content-Type":
-            "application/json",
+      Authorization: `Bearer ${token}`,
+    },
 
-          Authorization:
-            `Bearer ${token}`,
-        },
-
-        body: JSON.stringify({
-          content,
-        }),
-      }
-    );
+    body: JSON.stringify({
+      content,
+    }),
+  });
 
   if (!response.ok) {
-
-    throw new Error(
-      "Error actualizando post"
-    );
+    throw new Error("Error actualizando post");
   }
 
   return response.json();
@@ -169,33 +117,19 @@ export async function updatePost(
 // DELETE POST
 // =========================
 
-export async function deletePost(
-  postId: string
-) {
+export async function deletePost(postId: string) {
+  const token = await AsyncStorage.getItem("token");
 
-  const token =
-    await AsyncStorage.getItem(
-      "token"
-    );
+  const response = await fetch(`${API_URL}/${postId}`, {
+    method: "DELETE",
 
-  const response =
-    await fetch(
-      `${API_URL}/${postId}`,
-      {
-        method: "DELETE",
-
-        headers: {
-          Authorization:
-            `Bearer ${token}`,
-        },
-      }
-    );
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
   if (!response.ok) {
-
-    throw new Error(
-      "Error eliminando post"
-    );
+    throw new Error("Error eliminando post");
   }
 
   return true;
@@ -205,35 +139,23 @@ export async function deletePost(
 // POSTS BY PROFILE
 // =========================
 
-export async function getPostsByProfile(
-  profileId: string
-) {
+export async function getPostsByProfile(profileId: string) {
+  const token = await AsyncStorage.getItem("token");
 
-  const token =
-    await AsyncStorage.getItem(
-      "token"
-    );
-
-  const response =
-    await fetch(
-      `http://192.168.38.77:5264/api/v1/profiles/${profileId}/posts`,
-      {
-        headers: {
-          Authorization:
-            `Bearer ${token}`,
-        },
-      }
-    );
+  const response = await fetch(
+    `http://192.168.38.77:5264/api/v1/profiles/${profileId}/posts`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
 
   if (!response.ok) {
-
-    throw new Error(
-      "Error obteniendo posts del perfil"
-    );
+    throw new Error("Error obteniendo posts del perfil");
   }
 
-  const data =
-    await response.json();
+  const data = await response.json();
 
   return data.data || data;
 }
@@ -241,31 +163,17 @@ export async function getPostsByProfile(
 // GET POST BY ID
 // =========================
 
-export async function getPostById(
-  postId: string
-) {
+export async function getPostById(postId: string) {
+  const token = await AsyncStorage.getItem("token");
 
-  const token =
-    await AsyncStorage.getItem(
-      "token"
-    );
-
-  const response =
-    await fetch(
-      `${API_URL}/${postId}`,
-      {
-        headers: {
-          Authorization:
-            `Bearer ${token}`,
-        },
-      }
-    );
+  const response = await fetch(`${API_URL}/${postId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
   if (!response.ok) {
-
-    throw new Error(
-      "Error obteniendo publicación"
-    );
+    throw new Error("Error obteniendo publicación");
   }
 
   return response.json();
@@ -274,46 +182,28 @@ export async function getPostById(
 // LIKE POST
 // =========================
 
-export async function likePost(
-  postId: string
-) {
+export async function likePost(postId: string) {
+  const token = await AsyncStorage.getItem("token");
 
-  const token =
-    await AsyncStorage.getItem(
-      "token"
-    );
+  const response = await fetch(`${API_URL}/${postId}/likes`, {
+    method: "POST",
 
-  const response =
-    await fetch(
-      `${API_URL}/${postId}/likes`,
-      {
-        method: "POST",
-
-        headers: {
-          Authorization:
-            `Bearer ${token}`,
-        },
-      }
-    );
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
   if (!response.ok) {
-
-    const error =
-      await response.text();
+    const error = await response.text();
 
     console.log(error);
 
-    throw new Error(
-      "Error dando like"
-    );
+    throw new Error("Error dando like");
   }
 
   try {
-
     return await response.json();
-
   } catch {
-
     return true;
   }
 }
@@ -322,38 +212,23 @@ export async function likePost(
 // DISLIKE POST
 // =========================
 
-export async function dislikePost(
-  postId: string
-) {
+export async function dislikePost(postId: string) {
+  const token = await AsyncStorage.getItem("token");
 
-  const token =
-    await AsyncStorage.getItem(
-      "token"
-    );
+  const response = await fetch(`${API_URL}/${postId}/likes`, {
+    method: "DELETE",
 
-  const response =
-    await fetch(
-      `${API_URL}/${postId}/likes`,
-      {
-        method: "DELETE",
-
-        headers: {
-          Authorization:
-            `Bearer ${token}`,
-        },
-      }
-    );
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
   if (!response.ok) {
-
-    const error =
-      await response.text();
+    const error = await response.text();
 
     console.log(error);
 
-    throw new Error(
-      "Error quitando like"
-    );
+    throw new Error("Error quitando like");
   }
 
   return true;
@@ -363,44 +238,26 @@ export async function dislikePost(
 // GET LIKES
 // =========================
 
-export async function getLikes(
-  postId: string
-) {
+export async function getLikes(postId: string) {
+  const token = await AsyncStorage.getItem("token");
 
-  const token =
-    await AsyncStorage.getItem(
-      "token"
-    );
-
-  const response =
-    await fetch(
-      `${API_URL}/${postId}/likes`,
-      {
-        headers: {
-          Authorization:
-            `Bearer ${token}`,
-        },
-      }
-    );
+  const response = await fetch(`${API_URL}/${postId}/likes`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
   if (!response.ok) {
-
-    const error =
-      await response.text();
+    const error = await response.text();
 
     console.log(error);
 
-    throw new Error(
-      "Error obteniendo likes"
-    );
+    throw new Error("Error obteniendo likes");
   }
 
-  const data =
-    await response.json();
+  const data = await response.json();
 
-  console.log(
-    "LIKES RESPONSE:"
-  );
+  console.log("LIKES RESPONSE:");
 
   console.log(data);
 

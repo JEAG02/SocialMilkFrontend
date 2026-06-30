@@ -12,6 +12,5 @@ export default function AnimalsStack() {
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
-    
   );
 }

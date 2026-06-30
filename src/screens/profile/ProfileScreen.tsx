@@ -6,463 +6,279 @@ import {
   View,
 } from "react-native";
 
-import Ionicons
-from "@expo/vector-icons/Ionicons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
-import {
-  useAuth,
-} from "../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 
 import {
   getMyProfile,
+  updateMyProfile,
 } from "../../services/authProfileService";
 
-import {
-  getProductions,
-} from "../../services/productionService";
+import { getProductions } from "../../services/productionService";
 
-import {
-  getAnimals,
-} from "../../services/animalsService";
+import { getAnimals } from "../../services/animalsService";
 
-import {
-  useAnimals,
-} from "../../context/AnimalsContext";
+import { useAnimals } from "../../context/AnimalsContext";
 
-import {
-  getSales,
-} from "../../services/salesService";
+import { getSales } from "../../services/salesService";
 
 import { pickAndUploadImage } from "../../services/cloudinaryService";
 import { Image } from "react-native";
 
-export default function ProfileScreen({
-  navigation,
-}: any) {
+import { updateProfileImage } from "../../services/profileImageService";
 
+import { deleteProfileAvatar } from "../../services/authProfileService";
+
+export default function ProfileScreen({ navigation }: any) {
   const { logout } = useAuth();
-  const [profile, setProfile] =
-  useState<any>(null);
-  const [profileImage, setProfileImage] =
-  useState<string | null>(null);
+  const [profile, setProfile] = useState<any>(null);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
   const { animals } = useAnimals();
-  
-const [animalsCount, setAnimalsCount] =
-  useState(0);
 
-const [productionsCount, setProductionsCount] =
-  useState(0);
+  const [animalsCount, setAnimalsCount] = useState(0);
 
-const [salesCount, setSalesCount] =
-  useState(0);
+  const [productionsCount, setProductionsCount] = useState(0);
+
+  const [salesCount, setSalesCount] = useState(0);
   useEffect(() => {
+    loadProfile();
+    loadStats();
+  }, []);
 
-  loadProfile();
-  loadStats();
-}, []);
-
-const handleChangePhoto =
-  async () => {
-
+  const handleChangePhoto = async () => {
     try {
+      const imageUrl = await pickAndUploadImage();
 
-      const imageUrl =
-        await pickAndUploadImage();
+      console.log("URL RECIBIDA:", imageUrl);
 
       if (!imageUrl) return;
 
-      setProfileImage(imageUrl);
+      await updateMyProfile({
+        email: profile.email,
+        phone: profile.phone,
+        fullName: profile.fullName,
+        locationName: profile.locationName,
+        profilePictureUrl: imageUrl,
+      });
 
-      // luego aquí puedes guardar
-      // la URL en tu backend
+      console.log("PROFILE UPDATED");
 
+      await loadProfile();
     } catch (error) {
+      console.log("ERROR UPDATE PROFILE:");
 
       console.log(error);
     }
   };
-const loadProfile =
-  async () => {
 
+  const handleDeletePhoto = async () => {
     try {
+      await deleteProfileAvatar();
 
-      const data =
-        await getMyProfile();
+      setProfileImage(null);
+
+      setProfile((prev: any) => ({
+        ...prev,
+        profilePictureUrl: null,
+      }));
+
+      // Opcional: vuelve a consultar al servidor
+      await loadProfile();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const loadProfile = async () => {
+    try {
+      const data = await getMyProfile();
 
       console.log("PROFILE:");
       console.log(data);
 
       setProfile(data);
 
-      if (data.profileImageUrl) {
-
-        setProfileImage(
-          data.profileImageUrl
-        );
+      if (data.profilePictureUrl) {
+        setProfileImage(data.profilePictureUrl ?? null);
       }
-
+      console.log("FOTO PERFIL:", data.profilePictureUrl);
     } catch (error) {
+      console.log(error);
+    }
+  };
+  const loadStats = async () => {
+    try {
+      const animals = await getAnimals();
+
+      const productions = await getProductions();
+
+      const sales = await getSales();
+
+      setAnimalsCount(Array.isArray(animals) ? animals.length : 0);
+
+      setProductionsCount(Array.isArray(productions) ? productions.length : 0);
+
+      setSalesCount(Array.isArray(sales) ? sales.length : 0);
+    } catch (error) {
+      console.log("Error cargando stats");
 
       console.log(error);
     }
   };
-const loadStats =
-  async () => {
-
-  try {
-
-    const animals =
-      await getAnimals();
-
-    const productions =
-      await getProductions();
-
-    const sales =
-      await getSales();
-
-    setAnimalsCount(
-      Array.isArray(animals)
-        ? animals.length
-        : 0
-    );
-
-    setProductionsCount(
-      Array.isArray(productions)
-        ? productions.length
-        : 0
-    );
-
-    setSalesCount(
-      Array.isArray(sales)
-        ? sales.length
-        : 0
-    );
-
-  } catch (error) {
-
-    console.log(
-      "Error cargando stats"
-    );
-
-    console.log(error);
-  }
-};
+  console.log("RENDER FOTO:", profileImage);
 
   return (
-    <ScrollView
-      style={styles.container}
-      showsVerticalScrollIndicator={false}
-    >
-
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* HEADER */}
 
       <View style={styles.header}>
-
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() =>
-            navigation.goBack()
-          }
+          onPress={() => navigation.goBack()}
         >
-
-          <Ionicons
-            name="arrow-back"
-            size={24}
-            color="#111827"
-          />
-
+          <Ionicons name="arrow-back" size={24} color="#111827" />
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>
-          Mi Perfil
-        </Text>
-
+        <Text style={styles.headerTitle}>Mi Perfil</Text>
       </View>
 
       {/* PROFILE CARD */}
 
       <View style={styles.profileCard}>
-
         <View style={styles.avatar}>
-
-          
-  {
-    profileImage ? (
-
-      <Image
-        source={{
-          uri: profileImage,
-        }}
-        style={styles.avatar}
-      />
-
-    ) : (
-
-      <Ionicons
-            name="person"
-            size={60}
-            color="#fff"
-          />
-
-    )
-  }
-
+          {profileImage ? (
+            <TouchableOpacity
+              style={styles.avatarTouchable}
+              onPress={() =>
+                navigation.navigate("ImageViewer", {
+                  imageUrl: profileImage,
+                })
+              }
+            >
+              <Image
+                source={{ uri: profileImage }}
+                style={styles.avatarImage}
+                resizeMode="cover"
+              />
+            </TouchableOpacity>
+          ) : (
+            <Ionicons name="person" size={60} color="#fff" />
+          )}
         </View>
-<TouchableOpacity
-  onPress={handleChangePhoto}
->
-  <Ionicons
-    name="camera"
-    size={24}
-    color="#f59e0b"
-  />
-</TouchableOpacity>
-        <Text style={styles.name}>
-          
-  {
-    profile?.fullName ??
-    "Usuario"
-  }
-</Text>
+        <TouchableOpacity onPress={handleChangePhoto}>
+          <Ionicons name="camera" size={24} color="#f59e0b" />
+        </TouchableOpacity>
+        {profileImage && (
+          <TouchableOpacity
+            onPress={handleDeletePhoto}
+            style={{
+              marginTop: 10,
+            }}
+          >
+            <Ionicons name="trash" size={24} color="#ef4444" />
+          </TouchableOpacity>
+        )}
+        <Text style={styles.name}>{profile?.fullName ?? "Usuario"}</Text>
 
         <Text style={styles.role}>
-  {
-    profile?.roleId === 1
-      ? "Productor Ganadero"
-      : profile?.roleId === 2
-      ? "Administrador"
-      : "Usuario"
-  }
-</Text>
+          {profile?.roleId === 1
+            ? "Productor Ganadero"
+            : profile?.roleId === 2
+              ? "Administrador"
+              : "Usuario"}
+        </Text>
 
         <View style={styles.locationRow}>
-
-          <Ionicons
-            name="location"
-            size={18}
-            color="#64748b"
-          />
+          <Ionicons name="location" size={18} color="#64748b" />
 
           <Text style={styles.location}>
-  {
-    profile?.locationName ??
-    "Ubicación no registrada"
-  }
-</Text>
-
+            {profile?.locationName ?? "Ubicación no registrada"}
+          </Text>
         </View>
-
       </View>
 
       {/* INFO */}
 
       <View style={styles.infoCard}>
-
-        <Text style={styles.sectionTitle}>
-          Información Personal
-        </Text>
+        <Text style={styles.sectionTitle}>Información Personal</Text>
 
         {/* EMAIL */}
 
         <View style={styles.infoItem}>
-
           <View style={styles.infoIcon}>
-
-            <Ionicons
-              name="mail"
-              size={22}
-              color="#3b82f6"
-            />
-
+            <Ionicons name="mail" size={22} color="#3b82f6" />
           </View>
 
           <View>
-
-            <Text style={styles.infoLabel}>
-              Correo electrónico
-            </Text>
+            <Text style={styles.infoLabel}>Correo electrónico</Text>
 
             <Text style={styles.infoValue}>
-  {
-    profile?.email ??
-    "Sin correo"
-  }
-</Text>
-
+              {profile?.email ?? "Sin correo"}
+            </Text>
           </View>
-
         </View>
 
         {/* PHONE */}
 
         <View style={styles.infoItem}>
-
           <View style={styles.infoIcon}>
-
-            <Ionicons
-              name="call"
-              size={22}
-              color="#16a34a"
-            />
-
+            <Ionicons name="call" size={22} color="#16a34a" />
           </View>
 
           <View>
-            <Text style={styles.infoLabel}>
-              Teléfono
-            </Text>
+            <Text style={styles.infoLabel}>Teléfono</Text>
             <Text style={styles.infoValue}>
-  {
-    profile?.phone ??
-    "Sin teléfono"
-  }
-</Text>
-
+              {profile?.phone ?? "Sin teléfono"}
+            </Text>
           </View>
-
         </View>
-
       </View>
 
       {/* STATS */}
 
       <View style={styles.statsContainer}>
-
         <View style={styles.statCard}>
+          <Text style={styles.statValue}>{animalsCount}</Text>
 
-          <Text style={styles.statValue}>
-  {animalsCount}
-</Text>
-
-          <Text style={styles.statLabel}>
-            Animales
-          </Text>
-
+          <Text style={styles.statLabel}>Animales</Text>
         </View>
 
         <View style={styles.statCard}>
+          <Text style={styles.statValue}>{productionsCount}</Text>
 
-          <Text style={styles.statValue}>
-  {productionsCount}
-</Text>
-
-          <Text style={styles.statLabel}>
-            Producción
-          </Text>
-
+          <Text style={styles.statLabel}>Producción</Text>
         </View>
 
         <View style={styles.statCard}>
+          <Text style={styles.statValue}>{salesCount}</Text>
 
-          <Text style={styles.statValue}>
-  {salesCount}
-</Text>
-
-          <Text style={styles.statLabel}>
-            Ventas
-          </Text>
-
+          <Text style={styles.statLabel}>Ventas</Text>
         </View>
-
-      </View>
-
-      {/* SETTINGS */}
-
-      <View style={styles.settingsCard}>
-
-        <Text style={styles.sectionTitle}>
-          Opciones
-        </Text>
-
-        <TouchableOpacity
-          style={styles.optionItem}
-        >
-
-          <Ionicons
-            name="settings"
-            size={24}
-            color="#3b82f6"
-          />
-
-          <Text style={styles.optionText}>
-            Configuración
-          </Text>
-
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.optionItem}
-        >
-
-          <Ionicons
-            name="notifications"
-            size={24}
-            color="#f59e0b"
-          />
-
-          <Text style={styles.optionText}>
-            Notificaciones
-          </Text>
-
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.optionItem}
-        >
-
-          <Ionicons
-            name="shield-checkmark"
-            size={24}
-            color="#16a34a"
-          />
-
-          <Text style={styles.optionText}>
-            Seguridad
-          </Text>
-
-        </TouchableOpacity>
-
       </View>
 
       {/* LOGOUT */}
 
-      <TouchableOpacity
-        style={styles.logoutButton}
-        onPress={logout}
-      >
+      <TouchableOpacity style={styles.logoutButton} onPress={logout}>
+        <Ionicons name="log-out" size={22} color="#fff" />
 
-        <Ionicons
-          name="log-out"
-          size={22}
-          color="#fff"
-        />
-
-        <Text style={styles.logoutText}>
-          Cerrar sesión
-        </Text>
-
+        <Text style={styles.logoutText}>Cerrar sesión</Text>
       </TouchableOpacity>
 
       <View style={{ height: 50 }} />
-
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
     backgroundColor: "#f1f5f9",
   },
 
   header: {
-
     flexDirection: "row",
     alignItems: "center",
 
@@ -472,7 +288,6 @@ const styles = StyleSheet.create({
   },
 
   backButton: {
-
     width: 48,
     height: 48,
 
@@ -499,7 +314,6 @@ const styles = StyleSheet.create({
   },
 
   profileCard: {
-
     backgroundColor: "#fff",
 
     marginHorizontal: 22,
@@ -518,18 +332,14 @@ const styles = StyleSheet.create({
   },
 
   avatar: {
-
     width: 120,
     height: 120,
-
     borderRadius: 60,
-
     backgroundColor: "#16a34a",
-
     justifyContent: "center",
     alignItems: "center",
-
     marginBottom: 20,
+    overflow: "hidden",
   },
 
   name: {
@@ -546,7 +356,6 @@ const styles = StyleSheet.create({
   },
 
   locationRow: {
-
     flexDirection: "row",
     alignItems: "center",
 
@@ -560,7 +369,6 @@ const styles = StyleSheet.create({
   },
 
   infoCard: {
-
     backgroundColor: "#fff",
 
     marginHorizontal: 22,
@@ -585,7 +393,6 @@ const styles = StyleSheet.create({
   },
 
   infoItem: {
-
     flexDirection: "row",
     alignItems: "center",
 
@@ -593,7 +400,6 @@ const styles = StyleSheet.create({
   },
 
   infoIcon: {
-
     width: 54,
     height: 54,
 
@@ -620,7 +426,6 @@ const styles = StyleSheet.create({
   },
 
   statsContainer: {
-
     flexDirection: "row",
     justifyContent: "space-between",
 
@@ -629,7 +434,6 @@ const styles = StyleSheet.create({
   },
 
   statCard: {
-
     width: "31%",
 
     backgroundColor: "#fff",
@@ -660,7 +464,6 @@ const styles = StyleSheet.create({
   },
 
   settingsCard: {
-
     backgroundColor: "#fff",
 
     marginHorizontal: 22,
@@ -678,7 +481,6 @@ const styles = StyleSheet.create({
   },
 
   optionItem: {
-
     flexDirection: "row",
     alignItems: "center",
 
@@ -693,7 +495,6 @@ const styles = StyleSheet.create({
   },
 
   logoutButton: {
-
     backgroundColor: "#ef4444",
 
     marginHorizontal: 22,
@@ -713,5 +514,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "800",
     marginLeft: 10,
+  },
+  avatarImage: {
+    width: "100%",
+    height: "100%",
+  },
+  avatarTouchable: {
+    width: "100%",
+    height: "100%",
   },
 });

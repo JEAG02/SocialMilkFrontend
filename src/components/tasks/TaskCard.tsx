@@ -52,9 +52,7 @@ export default function TaskCard({ title, status }: Props) {
         <Text style={{ fontSize: 15, fontWeight: "600", color: colors.text }}>
           {title}
         </Text>
-        <Text style={{ color: getColor(), fontSize: 13 }}>
-          {status}
-        </Text>
+        <Text style={{ color: getColor(), fontSize: 13 }}>{status}</Text>
       </View>
     </View>
   );

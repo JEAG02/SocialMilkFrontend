@@ -7,304 +7,206 @@ import {
   View,
   ActivityIndicator,
   Alert,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 
-import {
-  useState,
-} from "react";
+import { useState } from "react";
 
-import Ionicons
-from "@expo/vector-icons/Ionicons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
-import {
-  updateAnimal,
-} from "../../services/animalsService";
+import { updateAnimal } from "../../services/animalsService";
 
-export default function EditAnimalScreen({
-  route,
-  navigation,
-}: any) {
-
+export default function EditAnimalScreen({ route, navigation }: any) {
   const { animal } = route.params;
 
-  const [
-    animalName,
-    setAnimalName,
-  ] = useState(
-    animal.animalName
-  );
+  const [animalName, setAnimalName] = useState(animal.animalName);
 
-  const [
-    animalType,
-    setAnimalType,
-  ] = useState(
-    animal.animalType
-  );
+  const [animalType, setAnimalType] = useState(animal.animalType);
 
-  const [
-    animalBreed,
-    setAnimalBreed,
-  ] = useState(
-    animal.animalBreed
-  );
+  const [animalBreed, setAnimalBreed] = useState(animal.animalBreed);
 
-  const [
-    animalStatus,
-    setAnimalStatus,
-  ] = useState(
-    animal.animalStatus
-  );
+  const [animalStatus, setAnimalStatus] = useState(animal.animalStatus);
 
-  const [
-    birthDate,
-    setBirthDate,
-  ] = useState(
-    animal.birthDate
-      .split("T")[0]
-  );
+  const [birthDate, setBirthDate] = useState(animal.birthDate.split("T")[0]);
 
-  const [loading, setLoading] =
-    useState(false);
+  const [loading, setLoading] = useState(false);
 
   // =========================
   // UPDATE
   // =========================
 
-  const handleUpdate =
-    async () => {
-
+  const handleUpdate = async () => {
     try {
-
       setLoading(true);
 
-      await updateAnimal(
-        animal.animalId,
+      await updateAnimal(animal.animalId, {
+        animalName,
+        animalType,
+        animalBreed,
+        animalStatus,
+        birthDate,
+      });
+
+      Alert.alert("Éxito", "Animal actualizado correctamente", [
         {
+          text: "OK",
 
-          animalName,
-          animalType,
-          animalBreed,
-          animalStatus,
-          birthDate,
-        }
-      );
-
-      Alert.alert(
-        "Éxito",
-        "Animal actualizado correctamente",
-        [
-          {
-            text: "OK",
-
-            onPress: () =>
-              navigation.goBack(),
-          },
-        ]
-      );
-
+          onPress: () => navigation.goBack(),
+        },
+      ]);
     } catch (error) {
-
       console.log(error);
 
-      Alert.alert(
-        "Error",
-        "No se pudo actualizar"
-      );
-
+      Alert.alert("Error", "No se pudo actualizar");
     } finally {
-
       setLoading(false);
     }
   };
 
   return (
-
-    <ScrollView
-      style={styles.container}
-      showsVerticalScrollIndicator={false}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
+      <FlatList
+        data={[{ id: "page" }]}
+        keyExtractor={(item) => item.id}
+        keyboardShouldPersistTaps="handled"
+        renderItem={() => null}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingBottom: 40,
+        }}
+        ListHeaderComponent={
+          <>
+            {/* HEADER */}
 
-      {/* HEADER */}
-
-      <View style={styles.header}>
-
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() =>
-            navigation.goBack()
-          }
-        >
-
-          <Ionicons
-            name="arrow-back"
-            size={24}
-            color="#111827"
-          />
-
-        </TouchableOpacity>
-
-        <View>
-
-          <Text style={styles.subtitle}>
-            Gestión animal
-          </Text>
-
-          <Text style={styles.title}>
-            Editar Animal
-          </Text>
-
-        </View>
-
-      </View>
-
-      {/* FORM */}
-
-      <View style={styles.form}>
-
-        {/* NAME */}
-
-        <Text style={styles.label}>
-          Nombre
-        </Text>
-
-        <TextInput
-          style={styles.input}
-          value={animalName}
-          onChangeText={
-            setAnimalName
-          }
-          placeholder="Nombre"
-        />
-
-        {/* TYPE */}
-
-        <Text style={styles.label}>
-          Tipo
-        </Text>
-
-        <TextInput
-          style={styles.input}
-          value={animalType}
-          onChangeText={
-            setAnimalType
-          }
-          placeholder="Tipo"
-        />
-
-        {/* BREED */}
-
-        <Text style={styles.label}>
-          Raza
-        </Text>
-
-        <TextInput
-          style={styles.input}
-          value={animalBreed}
-          onChangeText={
-            setAnimalBreed
-          }
-          placeholder="Raza"
-        />
-
-        {/* STATUS */}
-
-        <Text style={styles.label}>
-          Estado
-        </Text>
-
-        <TextInput
-          style={styles.input}
-          value={animalStatus}
-          onChangeText={
-            setAnimalStatus
-          }
-          placeholder="Estado"
-        />
-
-        {/* DATE */}
-
-        <Text style={styles.label}>
-          Fecha nacimiento
-        </Text>
-
-        <TextInput
-          style={styles.input}
-          value={birthDate}
-          onChangeText={
-            setBirthDate
-          }
-          placeholder="2020-01-01"
-        />
-
-        {/* BUTTON */}
-
-        <TouchableOpacity
-          style={styles.button}
-          onPress={handleUpdate}
-          disabled={loading}
-        >
-
-          {loading ? (
-
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-              }}
-            >
-
-              <ActivityIndicator
-                color="#fff"
-              />
-
-              <Text
-                style={{
-                  color: "#fff",
-                  marginLeft: 10,
-                  fontWeight: "700",
-                }}
+            <View style={styles.header}>
+              <TouchableOpacity
+                style={styles.backButton}
+                onPress={() => navigation.goBack()}
               >
-                Guardando...
-              </Text>
+                <Ionicons name="arrow-back" size={24} color="#111827" />
+              </TouchableOpacity>
 
+              <View>
+                <Text style={styles.subtitle}>Gestión animal</Text>
+
+                <Text style={styles.title}>Editar Animal</Text>
+              </View>
             </View>
 
-          ) : (
+            {/* FORM */}
 
-            <>
-              <Ionicons
-                name="save-outline"
-                size={20}
-                color="#fff"
+            <View style={styles.form}>
+              {/* NAME */}
+
+              <Text style={styles.label}>Nombre</Text>
+
+              <TextInput
+                style={styles.input}
+                value={animalName}
+                onChangeText={setAnimalName}
+                placeholder="Nombre"
               />
 
-              <Text
-                style={styles.buttonText}
+              {/* TYPE */}
+
+              <Text style={styles.label}>Tipo</Text>
+
+              <TextInput
+                style={styles.input}
+                value={animalType}
+                onChangeText={setAnimalType}
+                placeholder="Tipo"
+              />
+
+              {/* BREED */}
+
+              <Text style={styles.label}>Raza</Text>
+
+              <TextInput
+                style={styles.input}
+                value={animalBreed}
+                onChangeText={setAnimalBreed}
+                placeholder="Raza"
+              />
+
+              {/* STATUS */}
+
+              <Text style={styles.label}>Estado</Text>
+
+              <TextInput
+                style={styles.input}
+                value={animalStatus}
+                onChangeText={setAnimalStatus}
+                placeholder="Estado"
+              />
+
+              {/* DATE */}
+
+              <Text style={styles.label}>Fecha nacimiento</Text>
+
+              <TextInput
+                style={styles.input}
+                value={birthDate}
+                onChangeText={setBirthDate}
+                placeholder="2020-01-01"
+              />
+
+              {/* BUTTON */}
+
+              <TouchableOpacity
+                style={styles.button}
+                onPress={handleUpdate}
+                disabled={loading}
               >
-                Guardar cambios
-              </Text>
-            </>
-          )}
+                {loading ? (
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                    }}
+                  >
+                    <ActivityIndicator color="#fff" />
 
-        </TouchableOpacity>
+                    <Text
+                      style={{
+                        color: "#fff",
+                        marginLeft: 10,
+                        fontWeight: "700",
+                      }}
+                    >
+                      Guardando...
+                    </Text>
+                  </View>
+                ) : (
+                  <>
+                    <Ionicons name="save-outline" size={20} color="#fff" />
 
-      </View>
+                    <Text style={styles.buttonText}>Guardar cambios</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
 
-      <View style={{ height: 60 }} />
-
-    </ScrollView>
+            <View style={{ height: 60 }} />
+          </>
+        }
+      />
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
     backgroundColor: "#f8fafc",
   },
 
   header: {
-
     backgroundColor: "#f59e0b",
 
     paddingTop: 60,
@@ -319,14 +221,12 @@ const styles = StyleSheet.create({
   },
 
   backButton: {
-
     width: 50,
     height: 50,
 
     borderRadius: 18,
 
-    backgroundColor:
-      "rgba(255,255,255,0.9)",
+    backgroundColor: "rgba(255,255,255,0.9)",
 
     justifyContent: "center",
     alignItems: "center",
@@ -351,7 +251,6 @@ const styles = StyleSheet.create({
   },
 
   label: {
-
     fontSize: 15,
 
     fontWeight: "700",
@@ -364,7 +263,6 @@ const styles = StyleSheet.create({
   },
 
   input: {
-
     backgroundColor: "#fff",
 
     borderRadius: 18,
@@ -384,7 +282,6 @@ const styles = StyleSheet.create({
   },
 
   button: {
-
     backgroundColor: "#f59e0b",
 
     marginTop: 34,
@@ -406,7 +303,6 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-
     color: "#fff",
 
     fontSize: 16,

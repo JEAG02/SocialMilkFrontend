@@ -1,9 +1,4 @@
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 
 import Ionicons from "@expo/vector-icons/Ionicons";
 
@@ -14,12 +9,7 @@ interface Props {
   onPress: () => void;
 }
 
-export default function MenuCard({
-  title,
-  icon,
-  color,
-  onPress,
-}: Props) {
+export default function MenuCard({ title, icon, color, onPress }: Props) {
   return (
     <TouchableOpacity
       activeOpacity={0.85}
@@ -32,11 +22,7 @@ export default function MenuCard({
 
       <Text style={styles.title}>{title}</Text>
 
-      <Ionicons
-        name="chevron-forward"
-        size={24}
-        color="#9ca3af"
-      />
+      <Ionicons name="chevron-forward" size={24} color="#9ca3af" />
     </TouchableOpacity>
   );
 }

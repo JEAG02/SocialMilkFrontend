@@ -8,111 +8,65 @@ import {
   View,
 } from "react-native";
 
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 
-import Ionicons
-from "@expo/vector-icons/Ionicons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
-import AsyncStorage
-from "@react-native-async-storage/async-storage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import {
-  deleteSale,
-} from "../../services/salesService";
+import { deleteSale } from "../../services/salesService";
 
 import { API_CONFIG } from "../../config/api";
 
-const API_URL =
-  `${API_CONFIG.BASE_URL}${API_CONFIG.SALES}`;
+const API_URL = `${API_CONFIG.BASE_URL}${API_CONFIG.SALES}`;
 
-export default function
-SaleDetailScreen({
-  route,
-  navigation,
-}: any) {
+export default function SaleDetailScreen({ route, navigation }: any) {
+  const { saleId } = route.params;
 
-  const {
-    saleId,
-  } = route.params;
+  const [sale, setSale] = useState<any>(null);
 
-  const [sale, setSale]
-    = useState<any>(null);
-
-  const [loading, setLoading]
-    = useState(true);
+  const [loading, setLoading] = useState(true);
 
   // =========================
   // LOAD DETAIL
   // =========================
 
-  const loadSale =
-    async () => {
-
+  const loadSale = async () => {
     try {
+      const token = await AsyncStorage.getItem("token");
 
-      const token =
-        await AsyncStorage.getItem(
-          "token"
-        );
-
-      const response =
-        await fetch(
-          `${API_URL}/${saleId}`,
-          {
-            headers: {
-              Authorization:
-                `Bearer ${token}`,
-            },
-          }
-        );
+      const response = await fetch(`${API_URL}/${saleId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (!response.ok) {
-
-        throw new Error(
-          "Error cargando venta"
-        );
+        throw new Error("Error cargando venta");
       }
 
-      const data =
-        await response.json();
+      const data = await response.json();
 
       setSale(data);
-
     } catch (error) {
-
       console.log(error);
 
-      Alert.alert(
-        "Error",
-        "No se pudo cargar"
-      );
-
+      Alert.alert("Error", "No se pudo cargar");
     } finally {
-
       setLoading(false);
     }
   };
 
   useEffect(() => {
-
     loadSale();
-
   }, []);
 
   // =========================
   // DELETE
   // =========================
 
-const handleDelete =
-  async () => {
-
-  Alert.alert(
-    "Eliminar",
-    "¿Deseas eliminar esta venta?",
-    [
+  const handleDelete = async () => {
+    Alert.alert("Eliminar", "¿Deseas eliminar esta venta?", [
       {
         text: "Cancelar",
         style: "cancel",
@@ -124,129 +78,69 @@ const handleDelete =
         style: "destructive",
 
         onPress: async () => {
-
           try {
+            await deleteSale(saleId);
 
-            await deleteSale(
-              saleId
-            );
-
-            Alert.alert(
-              "Éxito",
-              "Venta eliminada"
-            );
+            Alert.alert("Éxito", "Venta eliminada");
 
             navigation.goBack();
-
           } catch (error) {
-
             console.log(error);
 
-            Alert.alert(
-              "Error",
-              "No se pudo eliminar"
-            );
+            Alert.alert("Error", "No se pudo eliminar");
           }
         },
       },
-    ]
-  );
-};
+    ]);
+  };
 
   if (loading) {
-
     return (
-
       <View style={styles.loader}>
-
-        <ActivityIndicator
-          size="large"
-          color="#16a34a"
-        />
-
+        <ActivityIndicator size="large" color="#16a34a" />
       </View>
     );
   }
 
   return (
-
     <ScrollView style={styles.container}>
-
       {/* HEADER */}
 
       <View style={styles.header}>
-
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() =>
-            navigation.goBack()
-          }
+          onPress={() => navigation.goBack()}
         >
-
-          <Ionicons
-            name="arrow-back"
-            size={24}
-            color="#111827"
-          />
-
+          <Ionicons name="arrow-back" size={24} color="#111827" />
         </TouchableOpacity>
 
-        <Text style={styles.title}>
-          Detalle Venta
-        </Text>
-
+        <Text style={styles.title}>Detalle Venta</Text>
       </View>
 
       {/* CARD */}
 
       <View style={styles.card}>
-
         <View style={styles.iconContainer}>
-
-          <Ionicons
-            name="cash-outline"
-            size={34}
-            color="#16a34a"
-          />
-
+          <Ionicons name="cash-outline" size={34} color="#16a34a" />
         </View>
 
-        <Text style={styles.amount}>
-          ${sale.totalAmount}
-        </Text>
+        <Text style={styles.amount}>${sale.totalAmount}</Text>
 
-        <Text style={styles.client}>
-          {sale.buyerName}
-        </Text>
+        <Text style={styles.client}>{sale.buyerName}</Text>
 
         <View style={styles.infoBox}>
+          <Text style={styles.label}>Litros vendidos</Text>
 
-          <Text style={styles.label}>
-            Litros vendidos
-          </Text>
-
-          <Text style={styles.value}>
-            {sale.totalLitersSold} L
-          </Text>
-
+          <Text style={styles.value}>{sale.totalLitersSold} L</Text>
         </View>
 
         <View style={styles.infoBox}>
-
-          <Text style={styles.label}>
-            Fecha
-          </Text>
+          <Text style={styles.label}>Fecha</Text>
 
           <Text style={styles.value}>
-            {
-              new Date(
-                sale.saleDate
-              ).toLocaleDateString()
-            }
+            {new Date(sale.saleDate).toLocaleDateString()}
           </Text>
-
         </View>
-
       </View>
 
       {/* ACTIONS */}
@@ -254,60 +148,34 @@ const handleDelete =
       <TouchableOpacity
         style={styles.updateButton}
         onPress={() =>
-          navigation.navigate(
-            "UpdateSale",
-            {
-              saleId:
-                sale.saleId,
-            }
-          )
+          navigation.navigate("UpdateSale", {
+            saleId: sale.saleId,
+          })
         }
       >
+        <Ionicons name="create-outline" size={20} color="#fff" />
 
-        <Ionicons
-          name="create-outline"
-          size={20}
-          color="#fff"
-        />
-
-        <Text style={styles.buttonText}>
-          Actualizar
-        </Text>
-
+        <Text style={styles.buttonText}>Actualizar</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.deleteButton}
-        onPress={handleDelete}
-      >
+      <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
+        <Ionicons name="trash-outline" size={20} color="#fff" />
 
-        <Ionicons
-          name="trash-outline"
-          size={20}
-          color="#fff"
-        />
-
-        <Text style={styles.buttonText}>
-          Eliminar
-        </Text>
-
+        <Text style={styles.buttonText}>Eliminar</Text>
       </TouchableOpacity>
 
       <View style={{ height: 50 }} />
-
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
     backgroundColor: "#f1f5f9",
   },
 
   loader: {
-
     flex: 1,
 
     justifyContent: "center",
@@ -315,7 +183,6 @@ const styles = StyleSheet.create({
   },
 
   header: {
-
     backgroundColor: "#16a34a",
 
     paddingTop: 70,
@@ -327,7 +194,6 @@ const styles = StyleSheet.create({
   },
 
   backButton: {
-
     width: 48,
     height: 48,
 
@@ -342,7 +208,6 @@ const styles = StyleSheet.create({
   },
 
   title: {
-
     color: "#fff",
 
     fontSize: 34,
@@ -351,7 +216,6 @@ const styles = StyleSheet.create({
   },
 
   card: {
-
     backgroundColor: "#fff",
 
     margin: 24,
@@ -363,7 +227,6 @@ const styles = StyleSheet.create({
   },
 
   iconContainer: {
-
     width: 90,
     height: 90,
 
@@ -378,7 +241,6 @@ const styles = StyleSheet.create({
   },
 
   amount: {
-
     fontSize: 34,
 
     fontWeight: "900",
@@ -387,7 +249,6 @@ const styles = StyleSheet.create({
   },
 
   client: {
-
     marginTop: 10,
 
     fontSize: 18,
@@ -400,7 +261,6 @@ const styles = StyleSheet.create({
   },
 
   infoBox: {
-
     width: "100%",
 
     backgroundColor: "#f8fafc",
@@ -413,14 +273,12 @@ const styles = StyleSheet.create({
   },
 
   label: {
-
     color: "#64748b",
 
     marginBottom: 6,
   },
 
   value: {
-
     fontSize: 18,
 
     fontWeight: "800",
@@ -429,7 +287,6 @@ const styles = StyleSheet.create({
   },
 
   updateButton: {
-
     backgroundColor: "#16a34a",
 
     marginHorizontal: 24,
@@ -447,7 +304,6 @@ const styles = StyleSheet.create({
   },
 
   deleteButton: {
-
     backgroundColor: "#ef4444",
 
     marginHorizontal: 24,
@@ -463,7 +319,6 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-
     color: "#fff",
 
     fontWeight: "800",

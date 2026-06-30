@@ -1,239 +1,180 @@
 import {
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
   Alert,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 
 import { useState } from "react";
 
-import Ionicons
-from "@expo/vector-icons/Ionicons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
-import {
-  createHealthRecord,
-} from "../../services/animalHealthService";
+import { createHealthRecord } from "../../services/animalHealthService";
 
 export default function AnimalHealthRecordFormScreen({
   route,
   navigation,
 }: any) {
-
   const { animalId } = route.params;
 
-  const [
-    recordType,
-    setRecordType,
-  ] = useState("");
+  const [recordType, setRecordType] = useState("");
 
-  const [
-    description,
-    setDescription,
-  ] = useState("");
+  const [description, setDescription] = useState("");
 
   const handleSave = async () => {
+    try {
+      if (!recordType.trim() || !description.trim()) {
+        Alert.alert("Campos requeridos", "Completa toda la información.");
 
-  try {
+        return;
+      }
 
-    if (
-      !recordType.trim() ||
-      !description.trim()
-    ) {
-
-      Alert.alert(
-        "Campos requeridos",
-        "Completa toda la información."
-      );
-
-      return;
-    }
-
-    await createHealthRecord(
-      animalId,
-      {
+      await createHealthRecord(animalId, {
         recordType,
         description,
-      }
-    );
+      });
 
-    Alert.alert(
-      "Éxito",
-      "Registro médico guardado.",
-      [
+      Alert.alert("Éxito", "Registro médico guardado.", [
         {
           text: "OK",
 
-          onPress: () =>
-            navigation.goBack(),
+          onPress: () => navigation.goBack(),
         },
-      ]
-    );
+      ]);
+    } catch (error) {
+      console.log(error);
 
-  } catch (error) {
-
-    console.log(error);
-
-    Alert.alert(
-      "Error",
-      "No se pudo guardar el registro."
-    );
-  }
-};
+      Alert.alert("Error", "No se pudo guardar el registro.");
+    }
+  };
 
   return (
-
-    <ScrollView
-      style={styles.container}
-      showsVerticalScrollIndicator={false}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
+      <FlatList
+        data={[{ id: "page" }]}
+        keyExtractor={(item) => item.id}
+        keyboardShouldPersistTaps="handled"
+        renderItem={() => null}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingBottom: 40,
+        }}
+        ListHeaderComponent={
+          <>
+            {/* HEADER */}
 
-      {/* HEADER */}
+            <View style={styles.header}>
+              <View style={styles.headerSide}>
+                <TouchableOpacity
+                  style={styles.backButton}
+                  onPress={() => navigation.goBack()}
+                >
+                  <Ionicons name="arrow-back" size={24} color="#111827" />
+                </TouchableOpacity>
+              </View>
 
-<View style={styles.header}>
+              <View style={styles.headerCenter}>
+                <Ionicons name="medkit" size={34} color="#fff" />
 
-  <View style={styles.headerSide}>
+                <Text style={styles.headerTitle}>Nuevo Registro</Text>
 
-    <TouchableOpacity
-      style={styles.backButton}
-      onPress={() => navigation.goBack()}
-    >
-      <Ionicons
-        name="arrow-back"
-        size={24}
-        color="#111827"
+                <Text style={styles.headerSubtitle}>
+                  Historial médico del animal
+                </Text>
+              </View>
+
+              <View style={styles.headerSide} />
+            </View>
+
+            {/* FORM */}
+
+            <View style={styles.form}>
+              <Text style={styles.label}>Tipo de registro</Text>
+
+              <TextInput
+                style={styles.input}
+                placeholder="Vacunación, consulta, cirugía..."
+                value={recordType}
+                onChangeText={setRecordType}
+              />
+
+              <Text style={styles.label}>Descripción</Text>
+
+              <TextInput
+                style={styles.textArea}
+                placeholder="Describe el procedimiento realizado..."
+                value={description}
+                onChangeText={setDescription}
+                multiline
+              />
+
+              <TouchableOpacity style={styles.button} onPress={handleSave}>
+                <Ionicons name="save-outline" size={20} color="#fff" />
+
+                <Text style={styles.buttonText}>Guardar Registro</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={{ height: 50 }} />
+          </>
+        }
       />
-    </TouchableOpacity>
-
-  </View>
-
-  <View style={styles.headerCenter}>
-
-    <Ionicons
-      name="medkit"
-      size={34}
-      color="#fff"
-    />
-
-    <Text style={styles.headerTitle}>
-      Nuevo Registro
-    </Text>
-
-    <Text style={styles.headerSubtitle}>
-      Historial médico del animal
-    </Text>
-
-  </View>
-
-  <View style={styles.headerSide} />
-
-</View>
-
-      {/* FORM */}
-
-      <View style={styles.form}>
-
-        <Text style={styles.label}>
-          Tipo de registro
-        </Text>
-
-        <TextInput
-          style={styles.input}
-          placeholder="Vacunación, consulta, cirugía..."
-          value={recordType}
-          onChangeText={setRecordType}
-        />
-
-        <Text style={styles.label}>
-          Descripción
-        </Text>
-
-        <TextInput
-          style={styles.textArea}
-          placeholder="Describe el procedimiento realizado..."
-          value={description}
-          onChangeText={setDescription}
-          multiline
-        />
-
-        <TouchableOpacity
-          style={styles.button}
-          onPress={handleSave}
-        >
-
-          <Ionicons
-            name="save-outline"
-            size={20}
-            color="#fff"
-          />
-
-          <Text style={styles.buttonText}>
-            Guardar Registro
-          </Text>
-
-        </TouchableOpacity>
-
-      </View>
-
-      <View style={{ height: 50 }} />
-
-    </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
     backgroundColor: "#f8fafc",
   },
 
   header: {
+    backgroundColor: "#16a34a",
 
-  backgroundColor: "#16a34a",
+    paddingTop: 60,
+    paddingBottom: 36,
+    paddingHorizontal: 24,
 
-  paddingTop: 60,
-  paddingBottom: 36,
-  paddingHorizontal: 24,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
 
-  borderBottomLeftRadius: 30,
-  borderBottomRightRadius: 30,
+    flexDirection: "row",
+  },
 
-  flexDirection: "row",
-},
+  headerSide: {
+    width: 60,
 
-headerSide: {
+    justifyContent: "center",
+  },
 
-  width: 60,
+  headerCenter: {
+    flex: 1,
 
-  justifyContent: "center",
-},
+    alignItems: "center",
+  },
 
-headerCenter: {
+  backButton: {
+    width: 50,
+    height: 50,
 
-  flex: 1,
+    borderRadius: 18,
 
-  alignItems: "center",
-},
+    backgroundColor: "rgba(255,255,255,0.9)",
 
-backButton: {
-
-  width: 50,
-  height: 50,
-
-  borderRadius: 18,
-
-  backgroundColor:
-    "rgba(255,255,255,0.9)",
-
-  justifyContent: "center",
-  alignItems: "center",
-},
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
   headerTitle: {
-
     color: "#fff",
 
     fontSize: 30,
@@ -243,7 +184,6 @@ backButton: {
   },
 
   headerSubtitle: {
-
     color: "#dcfce7",
 
     marginTop: 6,
@@ -256,7 +196,6 @@ backButton: {
   },
 
   label: {
-
     fontSize: 15,
 
     fontWeight: "700",
@@ -269,7 +208,6 @@ backButton: {
   },
 
   input: {
-
     backgroundColor: "#fff",
 
     borderRadius: 18,
@@ -285,7 +223,6 @@ backButton: {
   },
 
   textArea: {
-
     backgroundColor: "#fff",
 
     borderRadius: 18,
@@ -305,7 +242,6 @@ backButton: {
   },
 
   button: {
-
     backgroundColor: "#16a34a",
 
     marginTop: 30,
@@ -323,7 +259,6 @@ backButton: {
   },
 
   buttonText: {
-
     color: "#fff",
 
     fontSize: 16,

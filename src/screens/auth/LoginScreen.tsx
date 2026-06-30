@@ -12,98 +12,69 @@ import { useState } from "react";
 
 import { useAuth } from "../../context/AuthContext";
 
-import {
-  login as loginService,
-} from "../../services/authService";
+import { login as loginService } from "../../services/authService";
 
-export default function LoginScreen({
-  navigation,
-}: any) {
+export default function LoginScreen({ navigation }: any) {
+  const [identifier, setIdentifier] = useState("");
 
-  const [identifier, setIdentifier] =
-    useState("");
+  const [password, setPassword] = useState("");
 
-  const [password, setPassword] =
-    useState("");
-
-  const [loading, setLoading] =
-    useState(false);
+  const [loading, setLoading] = useState(false);
 
   const { login } = useAuth();
 
   const handleLogin = async () => {
+    try {
+      setLoading(true);
 
-  try {
+      const res = await loginService(identifier, password);
 
-    setLoading(true);
+      console.log("LOGIN RES:", res);
 
-    const res =
-  await loginService(
-    identifier,
-    password
-  );
+      await login(res);
+    } catch (error: any) {
+      Alert.alert(
+        "Error",
+        JSON.stringify(error?.response?.data || error?.message || error),
+      );
 
-console.log(
-  "LOGIN RES:",
-  res
-);
-
-await login(res);
-
-  } catch (error: any) {
-
-  Alert.alert(
-    "Error",
-    JSON.stringify(error?.response?.data || error?.message || error)
-  );
-
-  console.log(error);
-
-} finally {
-
-    setLoading(false);
-  }
-};
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
-
       {/* HEADER */}
 
       <View style={styles.header}>
+        <Text style={styles.title}>SocialMilk</Text>
 
-        <Text style={styles.title}>
-          SocialMilk
-        </Text>
-
-        <Text style={styles.subtitle}>
-          Gestión inteligente ganadera
-        </Text>
-
+        <Text style={styles.subtitle}>Gestión inteligente ganadera</Text>
       </View>
 
       {/* FORM */}
 
       <View style={styles.form}>
+        <Text style={styles.welcome}>Bienvenido</Text>
 
-        <Text style={styles.welcome}>
-          Bienvenido
-        </Text>
+        <Text style={styles.description}>Inicia sesión para continuar</Text>
 
-        <Text style={styles.description}>
-          Inicia sesión para continuar
-        </Text>
+        <Text style={styles.label}>Correo electrónico o teléfono</Text>
 
         <TextInput
-  placeholder="Correo o teléfono"
-  placeholderTextColor="#9ca3af"
-  style={styles.input}
-  value={identifier}
-  onChangeText={setIdentifier}
-/>
+          placeholder="ejemplo@gmail.com o 3001234567"
+          placeholderTextColor="#9ca3af"
+          style={styles.input}
+          value={identifier}
+          onChangeText={setIdentifier}
+        />
+
+        <Text style={styles.label}>Contraseña</Text>
 
         <TextInput
-          placeholder="Contraseña"
+          placeholder="********"
           placeholderTextColor="#9ca3af"
           secureTextEntry
           style={styles.input}
@@ -116,44 +87,28 @@ await login(res);
           onPress={handleLogin}
           disabled={loading}
         >
-
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>
-              Ingresar
-            </Text>
+            <Text style={styles.buttonText}>Ingresar</Text>
           )}
-
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() =>
-            navigation.navigate("Register")
-          }
-        >
-          <Text style={styles.registerText}>
-            ¿No tienes cuenta?
-            {" "}
-            Regístrate
-          </Text>
+        <TouchableOpacity onPress={() => navigation.navigate("Register")}>
+          <Text style={styles.registerText}>¿No tienes cuenta? Regístrate</Text>
         </TouchableOpacity>
-
       </View>
-
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
     backgroundColor: "#f3f4f6",
   },
 
   header: {
-
     backgroundColor: "#16a34a",
 
     paddingTop: 90,
@@ -196,7 +151,6 @@ const styles = StyleSheet.create({
   },
 
   input: {
-
     backgroundColor: "#fff",
 
     borderRadius: 18,
@@ -218,7 +172,6 @@ const styles = StyleSheet.create({
   },
 
   button: {
-
     backgroundColor: "#16a34a",
 
     paddingVertical: 20,
@@ -243,7 +196,6 @@ const styles = StyleSheet.create({
   },
 
   registerText: {
-
     textAlign: "center",
 
     marginTop: 28,
@@ -253,5 +205,12 @@ const styles = StyleSheet.create({
     fontWeight: "700",
 
     fontSize: 15,
+  },
+  label: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#374151",
+    marginBottom: 8,
+    marginLeft: 4,
   },
 });

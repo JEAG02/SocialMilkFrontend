@@ -6,18 +6,11 @@ import {
   View,
 } from "react-native";
 
-import Ionicons
-from "@expo/vector-icons/Ionicons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
-import {
-  useTasks,
-} from "../../context/TasksContext";
+import { useTasks } from "../../context/TasksContext";
 
-export default function TasksScreen({
-  route,
-  navigation,
-}: any) {
-
+export default function TasksScreen({ route, navigation }: any) {
   const { status } = route.params;
 
   const {
@@ -38,12 +31,7 @@ export default function TasksScreen({
     COMPLETED: 2,
   };
 
-  const filtered =
-    tasks.filter(
-      (t) =>
-        t.status ===
-        statusMap[status]
-    );
+  const filtered = tasks.filter((t) => t.status === statusMap[status]);
 
   const titleMap: any = {
     PENDING: "Pendientes",
@@ -58,78 +46,49 @@ export default function TasksScreen({
   };
 
   const iconMap: any = {
-    PENDING:
-      "alert-circle-outline",
+    PENDING: "alert-circle-outline",
 
-    IN_PROGRESS:
-      "reload-circle-outline",
+    IN_PROGRESS: "reload-circle-outline",
 
-    COMPLETED:
-      "checkmark-done-circle-outline",
+    COMPLETED: "checkmark-done-circle-outline",
   };
 
   return (
-
     <ScrollView
       style={[
         styles.container,
         {
-          backgroundColor:
-            colorMap[status] + "12",
+          backgroundColor: colorMap[status] + "12",
         },
       ]}
       showsVerticalScrollIndicator={false}
     >
-
       {/* HEADER */}
 
       <View
         style={[
           styles.header,
           {
-            backgroundColor:
-              colorMap[status],
+            backgroundColor: colorMap[status],
           },
         ]}
       >
-
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() =>
-            navigation.goBack()
-          }
+          onPress={() => navigation.goBack()}
         >
-
-          <Ionicons
-            name="arrow-back"
-            size={24}
-            color="#111827"
-          />
-
+          <Ionicons name="arrow-back" size={24} color="#111827" />
         </TouchableOpacity>
 
         <View style={{ flex: 1 }}>
+          <Text style={styles.headerSubtitle}>Gestión de tareas</Text>
 
-          <Text style={styles.headerSubtitle}>
-            Gestión de tareas
-          </Text>
-
-          <Text style={styles.headerTitle}>
-            {titleMap[status]}
-          </Text>
-
+          <Text style={styles.headerTitle}>{titleMap[status]}</Text>
         </View>
 
         <View style={styles.headerIcon}>
-
-          <Ionicons
-            name={iconMap[status]}
-            size={30}
-            color="#fff"
-          />
-
+          <Ionicons name={iconMap[status]} size={30} color="#fff" />
         </View>
-
       </View>
 
       {/* BOTÓN CREAR */}
@@ -138,152 +97,86 @@ export default function TasksScreen({
         style={[
           styles.addButton,
           {
-            backgroundColor:
-              colorMap[status],
+            backgroundColor: colorMap[status],
 
-            shadowColor:
-              colorMap[status],
+            shadowColor: colorMap[status],
           },
         ]}
-        onPress={() =>
-          navigation.navigate(
-            "CreateTask"
-          )
-        }
+        onPress={() => navigation.navigate("CreateTask")}
       >
+        <Ionicons name="add" size={22} color="#fff" />
 
-        <Ionicons
-          name="add"
-          size={22}
-          color="#fff"
-        />
-
-        <Text style={styles.addButtonText}>
-          Nueva tarea
-        </Text>
-
+        <Text style={styles.addButtonText}>Nueva tarea</Text>
       </TouchableOpacity>
 
       {/* TASKS */}
 
       <View style={styles.content}>
-
         {filtered.length === 0 && (
-
           <View
             style={[
               styles.emptyCard,
               {
-                borderColor:
-                  colorMap[status],
+                borderColor: colorMap[status],
               },
             ]}
           >
+            <Ionicons name="document-text-outline" size={54} color="#cbd5e1" />
 
-            <Ionicons
-              name="document-text-outline"
-              size={54}
-              color="#cbd5e1"
-            />
-
-            <Text style={styles.emptyTitle}>
-              No hay tareas
-            </Text>
+            <Text style={styles.emptyTitle}>No hay tareas</Text>
 
             <Text style={styles.emptyText}>
-              Aquí aparecerán las tareas
-              correspondientes.
+              Aquí aparecerán las tareas correspondientes.
             </Text>
-
           </View>
         )}
 
         {filtered.map((task) => (
-
           <View
             key={task.taskId}
             style={[
               styles.card,
               {
-                borderColor:
-                  colorMap[status],
+                borderColor: colorMap[status],
               },
             ]}
           >
-
             {/* TOP */}
 
             <View style={styles.cardTop}>
-
               <View
                 style={[
                   styles.iconContainer,
                   {
-                    backgroundColor:
-                      colorMap[
-                        status
-                      ] + "15",
+                    backgroundColor: colorMap[status] + "15",
                   },
                 ]}
               >
-
                 <Ionicons
-                  name={
-                    iconMap[status]
-                  }
+                  name={iconMap[status]}
                   size={26}
-                  color={
-                    colorMap[
-                      status
-                    ]
-                  }
+                  color={colorMap[status]}
                 />
-
               </View>
 
               <View style={{ flex: 1 }}>
-
-                <Text
-                  style={
-                    styles.taskTitle
-                  }
-                >
-                  {task.taskTitle}
-                </Text>
+                <Text style={styles.taskTitle}>{task.taskTitle}</Text>
 
                 {!!task.taskDescription && (
-
-                  <Text
-                    style={
-                      styles.description
-                    }
-                  >
-                    {
-                      task.taskDescription
-                    }
-                  </Text>
+                  <Text style={styles.description}>{task.taskDescription}</Text>
                 )}
 
                 <Text
                   style={[
                     styles.taskStatus,
                     {
-                      color:
-                        colorMap[
-                          status
-                        ],
+                      color: colorMap[status],
                     },
                   ]}
                 >
-                  {
-                    titleMap[
-                      status
-                    ]
-                  }
+                  {titleMap[status]}
                 </Text>
-
               </View>
-
             </View>
 
             {/* ACTIONS */}
@@ -295,179 +188,80 @@ export default function TasksScreen({
                 marginBottom: 14,
               }}
             >
-
-            
-
               {/* ELIMINAR */}
 
               <TouchableOpacity
                 style={styles.deleteButton}
-                onPress={() =>
-                  deleteTask(
-                    task.taskId
-                  )
-                }
+                onPress={() => deleteTask(task.taskId)}
               >
-
-                <Ionicons
-                  name="trash-outline"
-                  size={18}
-                  color="#fff"
-                />
-
+                <Ionicons name="trash-outline" size={18} color="#fff" />
               </TouchableOpacity>
-
             </View>
 
             {/* PENDING */}
 
-            {status ===
-              "PENDING" && (
-
+            {status === "PENDING" && (
               <TouchableOpacity
-                style={
-                  styles.redButton
-                }
-                onPress={() =>
-                  moveToInProgress(
-                    task.taskId
-                  )
-                }
+                style={styles.redButton}
+                onPress={() => moveToInProgress(task.taskId)}
               >
+                <Ionicons name="play" size={18} color="#fff" />
 
-                <Ionicons
-                  name="play"
-                  size={18}
-                  color="#fff"
-                />
-
-                <Text
-                  style={
-                    styles.buttonText
-                  }
-                >
-                  Realizar tarea
-                </Text>
-
+                <Text style={styles.buttonText}>Realizar tarea</Text>
               </TouchableOpacity>
             )}
 
             {/* IN PROGRESS */}
 
-            {status ===
-              "IN_PROGRESS" && (
-
+            {status === "IN_PROGRESS" && (
               <>
-
                 <TouchableOpacity
-                  style={
-                    styles.orangeButton
-                  }
-                  onPress={() =>
-                    moveToCompleted(
-                      task.taskId
-                    )
-                  }
+                  style={styles.orangeButton}
+                  onPress={() => moveToCompleted(task.taskId)}
                 >
+                  <Ionicons name="checkmark" size={18} color="#fff" />
 
-                  <Ionicons
-                    name="checkmark"
-                    size={18}
-                    color="#fff"
-                  />
-
-                  <Text
-                    style={
-                      styles.buttonText
-                    }
-                  >
-                    Finalizar tarea
-                  </Text>
-
+                  <Text style={styles.buttonText}>Finalizar tarea</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={
-                    styles.grayButton
-                  }
-                  onPress={() =>
-                    moveToPending(
-                      task.taskId
-                    )
-                  }
+                  style={styles.grayButton}
+                  onPress={() => moveToPending(task.taskId)}
                 >
+                  <Ionicons name="arrow-undo" size={18} color="#fff" />
 
-                  <Ionicons
-                    name="arrow-undo"
-                    size={18}
-                    color="#fff"
-                  />
-
-                  <Text
-                    style={
-                      styles.buttonText
-                    }
-                  >
-                    Devolver
-                  </Text>
-
+                  <Text style={styles.buttonText}>Devolver</Text>
                 </TouchableOpacity>
-
               </>
             )}
 
             {/* COMPLETED */}
 
-            {status ===
-              "COMPLETED" && (
-
+            {status === "COMPLETED" && (
               <TouchableOpacity
-                style={
-                  styles.greenButton
-                }
-                onPress={() =>
-                  moveToInProgress(
-                    task.taskId
-                  )
-                }
+                style={styles.greenButton}
+                onPress={() => moveToInProgress(task.taskId)}
               >
+                <Ionicons name="refresh" size={18} color="#fff" />
 
-                <Ionicons
-                  name="refresh"
-                  size={18}
-                  color="#fff"
-                />
-
-                <Text
-                  style={
-                    styles.buttonText
-                  }
-                >
-                  Reabrir tarea
-                </Text>
-
+                <Text style={styles.buttonText}>Reabrir tarea</Text>
               </TouchableOpacity>
             )}
-
           </View>
         ))}
-
       </View>
 
       <View style={{ height: 50 }} />
-
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
   },
 
   header: {
-
     paddingTop: 60,
     paddingHorizontal: 24,
     paddingBottom: 34,
@@ -480,14 +274,12 @@ const styles = StyleSheet.create({
   },
 
   backButton: {
-
     width: 48,
     height: 48,
 
     borderRadius: 16,
 
-    backgroundColor:
-      "rgba(255,255,255,0.95)",
+    backgroundColor: "rgba(255,255,255,0.95)",
 
     justifyContent: "center",
     alignItems: "center",
@@ -509,21 +301,18 @@ const styles = StyleSheet.create({
   },
 
   headerIcon: {
-
     width: 62,
     height: 62,
 
     borderRadius: 20,
 
-    backgroundColor:
-      "rgba(255,255,255,0.18)",
+    backgroundColor: "rgba(255,255,255,0.18)",
 
     justifyContent: "center",
     alignItems: "center",
   },
 
   addButton: {
-
     marginHorizontal: 22,
     marginTop: 24,
 
@@ -553,7 +342,6 @@ const styles = StyleSheet.create({
   },
 
   card: {
-
     backgroundColor: "#fff",
 
     borderWidth: 2,
@@ -578,7 +366,6 @@ const styles = StyleSheet.create({
   },
 
   iconContainer: {
-
     width: 58,
     height: 58,
 
@@ -610,7 +397,6 @@ const styles = StyleSheet.create({
   },
 
   editButton: {
-
     width: 50,
     height: 50,
 
@@ -623,7 +409,6 @@ const styles = StyleSheet.create({
   },
 
   deleteButton: {
-
     width: 50,
     height: 50,
 
@@ -636,7 +421,6 @@ const styles = StyleSheet.create({
   },
 
   redButton: {
-
     backgroundColor: "#ef4444",
 
     paddingVertical: 16,
@@ -650,7 +434,6 @@ const styles = StyleSheet.create({
   },
 
   orangeButton: {
-
     backgroundColor: "#f59e0b",
 
     paddingVertical: 16,
@@ -666,7 +449,6 @@ const styles = StyleSheet.create({
   },
 
   greenButton: {
-
     backgroundColor: "#22c55e",
 
     paddingVertical: 16,
@@ -680,7 +462,6 @@ const styles = StyleSheet.create({
   },
 
   grayButton: {
-
     backgroundColor: "#64748b",
 
     paddingVertical: 16,
@@ -701,7 +482,6 @@ const styles = StyleSheet.create({
   },
 
   emptyCard: {
-
     backgroundColor: "#fff",
 
     borderWidth: 2,

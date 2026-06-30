@@ -1,12 +1,6 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
-import AsyncStorage
-from "@react-native-async-storage/async-storage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { useAuth } from "./AuthContext";
 
@@ -21,7 +15,6 @@ import {
 // =========================
 
 export interface Production {
-
   productionId: string;
 
   animalId: string;
@@ -36,63 +29,40 @@ export interface Production {
 }
 
 interface ProductionContextData {
-
   productions: Production[];
 
   loading: boolean;
 
   loadProductions: () => Promise<void>;
 
-  createProduction: (
-    production: any
-  ) => Promise<void>;
+  createProduction: (production: any) => Promise<void>;
 
-  deleteProduction: (
-    id: string
-  ) => Promise<void>;
+  deleteProduction: (id: string) => Promise<void>;
 }
 
-const ProductionContext =
-  createContext(
-    {} as ProductionContextData
-  );
+const ProductionContext = createContext({} as ProductionContextData);
 
-export function ProductionProvider({
-  children,
-}: any) {
-
+export function ProductionProvider({ children }: any) {
   const { isAuthenticated, loading: authLoading } = useAuth();
 
-  const [
-    productions,
-    setProductions,
-  ] = useState<Production[]>([]);
+  const [productions, setProductions] = useState<Production[]>([]);
 
-  const [loading, setLoading] =
-    useState(false);
+  const [loading, setLoading] = useState(false);
 
   // =========================
   // LOAD
   // =========================
 
-  const loadProductions =
-    async () => {
-
+  const loadProductions = async () => {
     try {
-
       setLoading(true);
 
-      const data =
-        await getProductions();
+      const data = await getProductions();
 
       setProductions(data);
-
     } catch (error) {
-
       console.log(error);
-
     } finally {
-
       setLoading(false);
     }
   };
@@ -102,45 +72,29 @@ export function ProductionProvider({
   // =========================
 
   useEffect(() => {
-
     if (!authLoading && isAuthenticated) {
       loadProductions();
     }
-
   }, [authLoading, isAuthenticated]);
 
   // =========================
   // CREATE
   // =========================
 
-  const createProduction =
-    async (
-      production: any
-    ) => {
-
+  const createProduction = async (production: any) => {
     try {
-
       await createProductionService({
+        animalId: production.animalId,
 
-  animalId:
-    production.animalId,
+        productionDate: new Date().toISOString(),
 
-  productionDate:
-    new Date().toISOString(),
+        milkVolumeLiters: Number(production.liters),
 
-  milkVolumeLiters:
-    Number(
-      production.liters
-    ),
-
-  shift:
-    production.shift,
-});
+        shift: production.shift,
+      });
 
       await loadProductions();
-
     } catch (error) {
-
       console.log(error);
 
       throw error;
@@ -151,30 +105,19 @@ export function ProductionProvider({
   // DELETE
   // =========================
 
-  const deleteProduction =
-    async (
-      id: string
-    ) => {
-
+  const deleteProduction = async (id: string) => {
     try {
-
-      await deleteProductionService(
-        id
-      );
+      await deleteProductionService(id);
 
       await loadProductions();
-
     } catch (error) {
-
       console.log(error);
     }
   };
 
   return (
-
     <ProductionContext.Provider
       value={{
-
         productions,
 
         loading,
@@ -186,16 +129,11 @@ export function ProductionProvider({
         deleteProduction,
       }}
     >
-
       {children}
-
     </ProductionContext.Provider>
   );
 }
 
 export function useProduction() {
-
-  return useContext(
-    ProductionContext
-  );
+  return useContext(ProductionContext);
 }

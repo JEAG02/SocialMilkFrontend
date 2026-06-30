@@ -6,19 +6,14 @@ import {
   View,
 } from "react-native";
 
-import Ionicons
-from "@expo/vector-icons/Ionicons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
-export default function ChatScreen({
-  navigation,
-}: any) {
-
+export default function ChatScreen({ navigation }: any) {
   const chats = [
     {
       id: 1,
       name: "Carlos Gómez",
-      message:
-        "¿Cómo va la producción hoy?",
+      message: "¿Cómo va la producción hoy?",
       time: "09:42",
       unread: 2,
       online: true,
@@ -26,8 +21,7 @@ export default function ChatScreen({
     {
       id: 2,
       name: "María López",
-      message:
-        "Te envié la información del ganado.",
+      message: "Te envié la información del ganado.",
       time: "08:15",
       unread: 0,
       online: false,
@@ -35,8 +29,7 @@ export default function ChatScreen({
     {
       id: 3,
       name: "Finca El Descanso",
-      message:
-        "Tenemos nuevo alimento premium.",
+      message: "Tenemos nuevo alimento premium.",
       time: "Ayer",
       unread: 4,
       online: true,
@@ -44,8 +37,7 @@ export default function ChatScreen({
     {
       id: 4,
       name: "Juan Herrera",
-      message:
-        "La vacuna llegó esta mañana.",
+      message: "La vacuna llegó esta mañana.",
       time: "Ayer",
       unread: 1,
       online: false,
@@ -53,15 +45,10 @@ export default function ChatScreen({
   ];
 
   return (
-    <ScrollView
-      style={styles.container}
-      showsVerticalScrollIndicator={false}
-    >
-
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* HEADER */}
 
       <View style={styles.header}>
-
         <View
           style={{
             flexDirection: "row",
@@ -69,172 +56,95 @@ export default function ChatScreen({
             flex: 1,
           }}
         >
-
           <TouchableOpacity
             style={styles.backButton}
-            onPress={() =>
-              navigation.goBack()
-            }
+            onPress={() => navigation.goBack()}
           >
-
-            <Ionicons
-              name="arrow-back"
-              size={24}
-              color="#111827"
-            />
-
+            <Ionicons name="arrow-back" size={24} color="#111827" />
           </TouchableOpacity>
 
           <View>
+            <Text style={styles.subtitle}>Comunidad ganadera</Text>
 
-            <Text style={styles.subtitle}>
-              Comunidad ganadera
-            </Text>
-
-            <Text style={styles.title}>
-              Chats
-            </Text>
-
+            <Text style={styles.title}>Chats</Text>
           </View>
-
         </View>
 
         <View style={styles.headerIcon}>
-
-          <Ionicons
-            name="chatbubbles"
-            size={28}
-            color="#fff"
-          />
-
+          <Ionicons name="chatbubbles" size={28} color="#fff" />
         </View>
-
       </View>
 
       {/* SEARCH */}
 
       <View style={styles.searchCard}>
+        <Ionicons name="search" size={22} color="#94a3b8" />
 
-        <Ionicons
-          name="search"
-          size={22}
-          color="#94a3b8"
-        />
-
-        <Text style={styles.searchText}>
-          Buscar conversación...
-        </Text>
-
+        <Text style={styles.searchText}>Buscar conversación...</Text>
       </View>
 
       {/* CHATS */}
 
       <View style={styles.content}>
-
         {chats.map((chat) => (
-
           <TouchableOpacity
             key={chat.id}
             style={styles.chatCard}
             activeOpacity={0.9}
           >
-
             {/* AVATAR */}
 
             <View style={styles.avatarContainer}>
-
               <View style={styles.avatar}>
-
-                <Ionicons
-                  name="person"
-                  size={30}
-                  color="#0d9488"
-                />
-
+                <Ionicons name="person" size={30} color="#0d9488" />
               </View>
 
-              {chat.online && (
-                <View style={styles.onlineDot} />
-              )}
-
+              {chat.online && <View style={styles.onlineDot} />}
             </View>
 
             {/* INFO */}
 
             <View style={styles.chatInfo}>
-
               <View style={styles.topRow}>
+                <Text style={styles.name}>{chat.name}</Text>
 
-                <Text style={styles.name}>
-                  {chat.name}
-                </Text>
-
-                <Text style={styles.time}>
-                  {chat.time}
-                </Text>
-
+                <Text style={styles.time}>{chat.time}</Text>
               </View>
 
               <View style={styles.bottomRow}>
-
-                <Text
-                  style={styles.message}
-                  numberOfLines={1}
-                >
+                <Text style={styles.message} numberOfLines={1}>
                   {chat.message}
                 </Text>
 
                 {chat.unread > 0 && (
-
                   <View style={styles.unreadBadge}>
-
-                    <Text
-                      style={styles.unreadText}
-                    >
-                      {chat.unread}
-                    </Text>
-
+                    <Text style={styles.unreadText}>{chat.unread}</Text>
                   </View>
                 )}
-
               </View>
-
             </View>
-
           </TouchableOpacity>
         ))}
-
       </View>
 
       {/* BUTTON */}
 
-      <TouchableOpacity
-        style={styles.floatingButton}
-      >
-
-        <Ionicons
-          name="create-outline"
-          size={30}
-          color="#fff"
-        />
-
+      <TouchableOpacity style={styles.floatingButton}>
+        <Ionicons name="create-outline" size={30} color="#fff" />
       </TouchableOpacity>
 
       <View style={{ height: 80 }} />
-
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
     backgroundColor: "#f1f5f9",
   },
 
   header: {
-
     backgroundColor: "#0d9488",
 
     paddingTop: 70,
@@ -250,14 +160,12 @@ const styles = StyleSheet.create({
   },
 
   backButton: {
-
     width: 48,
     height: 48,
 
     borderRadius: 16,
 
-    backgroundColor:
-      "rgba(255,255,255,0.92)",
+    backgroundColor: "rgba(255,255,255,0.92)",
 
     justifyContent: "center",
     alignItems: "center",
@@ -278,21 +186,18 @@ const styles = StyleSheet.create({
   },
 
   headerIcon: {
-
     width: 60,
     height: 60,
 
     borderRadius: 20,
 
-    backgroundColor:
-      "rgba(255,255,255,0.18)",
+    backgroundColor: "rgba(255,255,255,0.18)",
 
     justifyContent: "center",
     alignItems: "center",
   },
 
   searchCard: {
-
     backgroundColor: "#fff",
 
     marginHorizontal: 22,
@@ -324,7 +229,6 @@ const styles = StyleSheet.create({
   },
 
   chatCard: {
-
     backgroundColor: "#fff",
 
     borderRadius: 26,
@@ -349,7 +253,6 @@ const styles = StyleSheet.create({
   },
 
   avatar: {
-
     width: 64,
     height: 64,
 
@@ -362,7 +265,6 @@ const styles = StyleSheet.create({
   },
 
   onlineDot: {
-
     width: 16,
     height: 16,
 
@@ -384,7 +286,6 @@ const styles = StyleSheet.create({
   },
 
   topRow: {
-
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -393,7 +294,6 @@ const styles = StyleSheet.create({
   },
 
   bottomRow: {
-
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -419,7 +319,6 @@ const styles = StyleSheet.create({
   },
 
   unreadBadge: {
-
     backgroundColor: "#0d9488",
 
     minWidth: 28,
@@ -440,7 +339,6 @@ const styles = StyleSheet.create({
   },
 
   floatingButton: {
-
     width: 68,
     height: 68,
 

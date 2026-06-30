@@ -8,7 +8,7 @@ export const colors = {
 
   success: "#22C55E",
   warning: "#F59E0B",
-  
+
   pending: "#FFA726",
   inProgress: "#3B82F6",
   done: "#22C55E",

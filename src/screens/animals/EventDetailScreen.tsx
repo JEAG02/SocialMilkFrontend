@@ -1,250 +1,149 @@
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-    Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Alert,
 } from "react-native";
 
-import Ionicons
-from "@expo/vector-icons/Ionicons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 import { useState } from "react";
 
 import {
-    deleteHealthEvent,
-    updateHealthEvent,
+  deleteHealthEvent,
+  updateHealthEvent,
 } from "../../services/animalHealthService";
 
-export default function EventDetailScreen({
-            route,
-            navigation,
-}: any) {
+export default function EventDetailScreen({ route, navigation }: any) {
+  const { event, animalId } = route.params;
 
-            const { event, animalId } = route.params;
+  const [loading, setLoading] = useState(false);
 
-            const [loading, setLoading] =
-    useState(false);
-
-            const handleComplete = async () => {
-
+  const handleComplete = async () => {
     try {
+      setLoading(true);
 
-            setLoading(true);
+      await updateHealthEvent(animalId, event.healthEventId, {
+        eventType: event.eventType,
+        scheduledDate: event.scheduledDate,
+        status: "Completado",
+      });
 
-            await updateHealthEvent(
-        animalId,
-        event.healthEventId,
-        {
-                eventType: event.eventType,
-                scheduledDate:
-            event.scheduledDate,
-                status: "Completado",
-        }
-            );
+      Alert.alert("Éxito", "Evento marcado como completado");
 
-        Alert.alert(
-        "Éxito",
-        "Evento marcado como completado"
-        );
-
-        navigation.goBack();
-
+      navigation.goBack();
     } catch (error) {
+      console.log(error);
 
-        console.log(error);
-
-        Alert.alert(
-        "Error",
-        "No se pudo actualizar"
-        );
-
+      Alert.alert("Error", "No se pudo actualizar");
     } finally {
-
-        setLoading(false);
+      setLoading(false);
     }
-    };
-
-    const handleDelete = async () => {
-
-    Alert.alert(
-        "Eliminar evento",
-        "¿Estás seguro?",
-        [
-        {
-            text: "Cancelar",
-            onPress: () => {},
-        },
-        {
-            text: "Eliminar",
-            onPress: async () => {
-
-            try {
-
-                setLoading(true);
-
-                await deleteHealthEvent(
-                animalId,
-                event.healthEventId
-                );
-
-                Alert.alert(
-                "Éxito",
-                "Evento eliminado"
-                );
-
-                navigation.goBack();
-
-            } catch (error) {
-
-                console.log(error);
-
-                Alert.alert(
-                "Error",
-                "No se pudo eliminar"
-                );
-
-            } finally {
-
-                setLoading(false);
-            }
-            },
-            style: "destructive",
-        },
-      ]
-    );
   };
 
-    return (
+  const handleDelete = async () => {
+    Alert.alert("Eliminar evento", "¿Estás seguro?", [
+      {
+        text: "Cancelar",
+        onPress: () => {},
+      },
+      {
+        text: "Eliminar",
+        onPress: async () => {
+          try {
+            setLoading(true);
 
-    <ScrollView
-        style={styles.container}
-        showsVerticalScrollIndicator={false}
-    >
+            await deleteHealthEvent(animalId, event.healthEventId);
 
+            Alert.alert("Éxito", "Evento eliminado");
+
+            navigation.goBack();
+          } catch (error) {
+            console.log(error);
+
+            Alert.alert("Error", "No se pudo eliminar");
+          } finally {
+            setLoading(false);
+          }
+        },
+        style: "destructive",
+      },
+    ]);
+  };
+
+  return (
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* HEADER */}
 
-        <View style={styles.header}>
-
+      <View style={styles.header}>
         <TouchableOpacity
-            style={styles.backButton}
-            onPress={() =>
-            navigation.goBack()
-            }
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
         >
-
-            <Ionicons
-            name="arrow-back"
-            size={24}
-            color="#111827"
-            />
-
+          <Ionicons name="arrow-back" size={24} color="#111827" />
         </TouchableOpacity>
 
         <View style={styles.headerContent}>
+          <Ionicons name="calendar-outline" size={34} color="#fff" />
 
-            <Ionicons
-            name="calendar-outline"
-            size={34}
-            color="#fff"
-            />
-
-            <Text style={styles.headerTitle}>
-            Detalles del Evento
-            </Text>
-
+          <Text style={styles.headerTitle}>Detalles del Evento</Text>
         </View>
 
         <View style={styles.headerSpacer} />
-
-        </View>
+      </View>
 
       {/* CONTENIDO */}
 
-        <View style={styles.content}>
-
+      <View style={styles.content}>
         <View style={styles.card}>
-
           <View style={styles.section}>
+            <Text style={styles.label}>Tipo de Evento</Text>
 
-            <Text style={styles.label}>
-              Tipo de Evento
-            </Text>
-
-            <Text style={styles.value}>
-              {event.eventType}
-            </Text>
-
+            <Text style={styles.value}>{event.eventType}</Text>
           </View>
 
           <View style={styles.divider} />
 
           <View style={styles.section}>
-
-            <Text style={styles.label}>
-              Fecha Programada
-            </Text>
+            <Text style={styles.label}>Fecha Programada</Text>
 
             <Text style={styles.value}>
-              {
-                new Date(
-                  event.scheduledDate
-                ).toLocaleDateString(
-                  "es-ES",
-                  {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  }
-                )
-              }
+              {new Date(event.scheduledDate).toLocaleDateString("es-ES", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
             </Text>
-
           </View>
 
           <View style={styles.divider} />
 
           <View style={styles.section}>
-
-            <Text style={styles.label}>
-              Estado
-            </Text>
+            <Text style={styles.label}>Estado</Text>
 
             <View
               style={{
                 marginTop: 12,
               }}
             >
-
               <View
                 style={[
                   styles.statusBadge,
                   {
                     backgroundColor:
-                      event.status ===
-                      "Completado"
-                        ? "#d1fae5"
-                        : "#fef3c7",
+                      event.status === "Completado" ? "#d1fae5" : "#fef3c7",
                   },
                 ]}
               >
-
                 <Ionicons
                   name={
-                    event.status ===
-                    "Completado"
-                      ? "checkmark-circle"
-                      : "time"
+                    event.status === "Completado" ? "checkmark-circle" : "time"
                   }
                   size={18}
-                  color={
-                    event.status ===
-                    "Completado"
-                      ? "#059669"
-                      : "#d97706"
-                  }
+                  color={event.status === "Completado" ? "#059669" : "#d97706"}
                 />
 
                 <Text
@@ -252,131 +151,75 @@ export default function EventDetailScreen({
                     marginLeft: 8,
                     fontWeight: "700",
                     color:
-                      event.status ===
-                      "Completado"
-                        ? "#059669"
-                        : "#d97706",
+                      event.status === "Completado" ? "#059669" : "#d97706",
                   }}
                 >
                   {event.status}
                 </Text>
-
               </View>
-
             </View>
-
           </View>
 
-          {
-            event.description && (
+          {event.description && (
+            <>
+              <View style={styles.divider} />
 
-              <>
+              <View style={styles.section}>
+                <Text style={styles.label}>Notas</Text>
 
-                <View style={styles.divider} />
+                <Text style={styles.value}>{event.description}</Text>
+              </View>
+            </>
+          )}
 
-                <View style={styles.section}>
+          {event.createdAt && (
+            <>
+              <View style={styles.divider} />
 
-                  <Text style={styles.label}>
-                    Notas
-                  </Text>
+              <View style={styles.section}>
+                <Text style={styles.label}>Creado</Text>
 
-                  <Text style={styles.value}>
-                    {event.description}
-                  </Text>
-
-                </View>
-
-              </>
-            )
-          }
-
-          {
-            event.createdAt && (
-
-              <>
-
-                <View style={styles.divider} />
-
-                <View style={styles.section}>
-
-                  <Text style={styles.label}>
-                    Creado
-                  </Text>
-
-                  <Text style={styles.value}>
-                    {
-                      new Date(
-                        event.createdAt
-                      ).toLocaleDateString()
-                    }
-                  </Text>
-
-                </View>
-
-              </>
-            )
-          }
-
+                <Text style={styles.value}>
+                  {new Date(event.createdAt).toLocaleDateString()}
+                </Text>
+              </View>
+            </>
+          )}
         </View>
 
         {/* BOTONES DE ACCIÓN */}
 
-        {
-          event.status !==
-            "Completado" && (
+        {event.status !== "Completado" && (
+          <TouchableOpacity
+            style={styles.completeButton}
+            onPress={handleComplete}
+            disabled={loading}
+          >
+            <Ionicons name="checkmark-circle" size={20} color="#fff" />
 
-            <TouchableOpacity
-              style={styles.completeButton}
-              onPress={handleComplete}
-              disabled={loading}
-            >
-
-              <Ionicons
-                name="checkmark-circle"
-                size={20}
-                color="#fff"
-              />
-
-              <Text
-                style={styles.completeButtonText}
-              >
-                Marcar como Completado
-              </Text>
-
-            </TouchableOpacity>
-          )
-        }
+            <Text style={styles.completeButtonText}>
+              Marcar como Completado
+            </Text>
+          </TouchableOpacity>
+        )}
 
         <TouchableOpacity
           style={styles.deleteButton}
           onPress={handleDelete}
           disabled={loading}
         >
+          <Ionicons name="trash-outline" size={20} color="#fff" />
 
-          <Ionicons
-            name="trash-outline"
-            size={20}
-            color="#fff"
-          />
-
-          <Text
-            style={styles.deleteButtonText}
-          >
-            Eliminar Evento
-          </Text>
-
+          <Text style={styles.deleteButtonText}>Eliminar Evento</Text>
         </TouchableOpacity>
-
       </View>
 
       <View style={{ height: 50 }} />
-
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
     backgroundColor: "#f8fafc",
@@ -397,8 +240,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 18,
-    backgroundColor:
-      "rgba(255,255,255,0.9)",
+    backgroundColor: "rgba(255,255,255,0.9)",
     justifyContent: "center",
     alignItems: "center",
   },

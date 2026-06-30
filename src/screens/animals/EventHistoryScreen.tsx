@@ -6,274 +6,133 @@ import {
   View,
 } from "react-native";
 
-import Ionicons
-from "@expo/vector-icons/Ionicons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
-import {
-  useState,
-  useCallback,
-} from "react";
+import { useState, useCallback } from "react";
 
-import {
-  useFocusEffect,
-} from "@react-navigation/native";
+import { useFocusEffect } from "@react-navigation/native";
 
-import {
-  getHealthEvents,
-} from "../../services/animalHealthService";
+import { getHealthEvents } from "../../services/animalHealthService";
 
-export default function EventHistoryScreen({
-  route,
-  navigation,
-}: any) {
-
+export default function EventHistoryScreen({ route, navigation }: any) {
   const { animalId } = route.params;
 
-  const [events, setEvents] =
-    useState<any[]>([]);
+  const [events, setEvents] = useState<any[]>([]);
 
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const completedEvents =
-    events.filter(
-      (e) =>
-        e.status === "Completado"
-    );
+  const completedEvents = events.filter((e) => e.status === "Completado");
 
   const loadEvents = async () => {
-
     try {
-
-      const data =
-        await getHealthEvents(
-          animalId
-        );
+      const data = await getHealthEvents(animalId);
 
       setEvents(data);
-
     } catch (error) {
-
       console.log(error);
-
     } finally {
-
       setLoading(false);
     }
   };
 
   useFocusEffect(
     useCallback(() => {
-
       loadEvents();
-
-    }, [])
+    }, []),
   );
 
   return (
-
-    <ScrollView
-      style={styles.container}
-      showsVerticalScrollIndicator={false}
-    >
-
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* HEADER */}
 
       <View style={styles.header}>
-
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() =>
-            navigation.goBack()
-          }
+          onPress={() => navigation.goBack()}
         >
-
-          <Ionicons
-            name="arrow-back"
-            size={24}
-            color="#111827"
-          />
-
+          <Ionicons name="arrow-back" size={24} color="#111827" />
         </TouchableOpacity>
 
         <View style={styles.headerContent}>
+          <Ionicons name="checkmark-done-circle" size={34} color="#fff" />
 
-          <Ionicons
-            name="checkmark-done-circle"
-            size={34}
-            color="#fff"
-          />
+          <Text style={styles.headerTitle}>Historial de Eventos</Text>
 
-          <Text style={styles.headerTitle}>
-            Historial de Eventos
-          </Text>
-
-          <Text style={styles.headerSubtitle}>
-            Eventos completados
-          </Text>
-
+          <Text style={styles.headerSubtitle}>Eventos completados</Text>
         </View>
 
         <View style={styles.headerSpacer} />
-
       </View>
 
       {/* CONTENIDO */}
 
       <View style={styles.section}>
-
         <View style={styles.statsContainer}>
-
           <View style={styles.statCard}>
+            <Text style={styles.statNumber}>{completedEvents.length}</Text>
 
-            <Text style={styles.statNumber}>
-              {completedEvents.length}
-            </Text>
-
-            <Text style={styles.statLabel}>
-              Completados
-            </Text>
-
+            <Text style={styles.statLabel}>Completados</Text>
           </View>
 
           <View style={styles.statCard}>
-
             <Text style={styles.statNumber}>
-              {
-                events.filter(
-                  (e) =>
-                    e.status ===
-                    "Pendiente"
-                ).length
-              }
+              {events.filter((e) => e.status === "Pendiente").length}
             </Text>
 
-            <Text style={styles.statLabel}>
-              Pendientes
-            </Text>
-
+            <Text style={styles.statLabel}>Pendientes</Text>
           </View>
-
         </View>
 
-        <Text style={styles.sectionTitle}>
-          Eventos Completados
-        </Text>
+        <Text style={styles.sectionTitle}>Eventos Completados</Text>
 
-        {
-          completedEvents.length === 0 ? (
+        {completedEvents.length === 0 ? (
+          <View style={styles.emptyCard}>
+            <Ionicons name="checkmark-circle" size={48} color="#d1d5db" />
 
-            <View style={styles.emptyCard}>
+            <Text style={styles.emptyText}>No hay eventos completados</Text>
+          </View>
+        ) : (
+          completedEvents.map((event) => (
+            <TouchableOpacity
+              key={event.healthEventId}
+              style={styles.eventCard}
+              onPress={() =>
+                navigation.navigate("EventDetail", {
+                  event,
+                  animalId,
+                })
+              }
+            >
+              <View style={styles.iconContainer}>
+                <Ionicons name="checkmark-circle" size={24} color="#16a34a" />
+              </View>
 
-              <Ionicons
-                name="checkmark-circle"
-                size={48}
-                color="#d1d5db"
-              />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.eventTitle}>{event.eventType}</Text>
 
-              <Text
-                style={styles.emptyText}
-              >
-                No hay eventos completados
-              </Text>
+                <Text style={styles.eventDate}>
+                  {new Date(event.scheduledDate).toLocaleDateString()}
+                </Text>
 
-            </View>
+                {event.description && (
+                  <Text style={styles.eventDescription} numberOfLines={2}>
+                    {event.description}
+                  </Text>
+                )}
+              </View>
 
-          ) : (
-
-            completedEvents.map(
-              (event) => (
-
-                <TouchableOpacity
-                  key={event.healthEventId}
-                  style={styles.eventCard}
-                  onPress={() =>
-                    navigation.navigate(
-                      "EventDetail",
-                      {
-                        event,
-                        animalId,
-                      }
-                    )
-                  }
-                >
-
-                  <View
-                    style={
-                      styles.iconContainer
-                    }
-                  >
-
-                    <Ionicons
-                      name="checkmark-circle"
-                      size={24}
-                      color="#16a34a"
-                    />
-
-                  </View>
-
-                  <View style={{ flex: 1 }}>
-
-                    <Text
-                      style={
-                        styles.eventTitle
-                      }
-                    >
-                      {event.eventType}
-                    </Text>
-
-                    <Text
-                      style={
-                        styles.eventDate
-                      }
-                    >
-                      {
-                        new Date(
-                          event.scheduledDate
-                        ).toLocaleDateString()
-                      }
-                    </Text>
-
-                    {
-                      event.description && (
-
-                        <Text
-                          style={
-                            styles.eventDescription
-                          }
-                          numberOfLines={2}
-                        >
-                          {
-                            event.description
-                          }
-                        </Text>
-                      )
-                    }
-
-                  </View>
-
-                  <Ionicons
-                    name="chevron-forward"
-                    size={24}
-                    color="#cbd5e1"
-                  />
-
-                </TouchableOpacity>
-              )
-            )
-          )
-        }
-
+              <Ionicons name="chevron-forward" size={24} color="#cbd5e1" />
+            </TouchableOpacity>
+          ))
+        )}
       </View>
 
       <View style={{ height: 50 }} />
-
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
     backgroundColor: "#f8fafc",
@@ -294,8 +153,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 18,
-    backgroundColor:
-      "rgba(255,255,255,0.9)",
+    backgroundColor: "rgba(255,255,255,0.9)",
     justifyContent: "center",
     alignItems: "center",
   },

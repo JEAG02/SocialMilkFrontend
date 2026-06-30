@@ -1,21 +1,12 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
-import AsyncStorage
-from "@react-native-async-storage/async-storage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { useAuth } from "./AuthContext";
 
-import {
-  getAnimals,
-} from "../services/animalsService";
+import { getAnimals } from "../services/animalsService";
 
 export interface Animal {
-
   animalId: string;
 
   animalName: string;
@@ -24,7 +15,6 @@ export interface Animal {
 }
 
 interface AnimalsContextData {
-
   animals: Animal[];
 
   loading: boolean;
@@ -32,55 +22,36 @@ interface AnimalsContextData {
   loadAnimals: () => Promise<void>;
 }
 
-const AnimalsContext =
-  createContext(
-    {} as AnimalsContextData
-  );
+const AnimalsContext = createContext({} as AnimalsContextData);
 
-export function AnimalsProvider({
-  children,
-}: any) {
-
+export function AnimalsProvider({ children }: any) {
   const { isAuthenticated, loading: authLoading } = useAuth();
 
-  const [animals, setAnimals] =
-    useState<Animal[]>([]);
+  const [animals, setAnimals] = useState<Animal[]>([]);
 
-  const [loading, setLoading] =
-    useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const loadAnimals =
-    async () => {
-
+  const loadAnimals = async () => {
     try {
-
       setLoading(true);
 
-      const data =
-        await getAnimals();
+      const data = await getAnimals();
 
       setAnimals(data);
-
     } catch (error) {
-
       console.log(error);
-
     } finally {
-
       setLoading(false);
     }
   };
 
   useEffect(() => {
-
     if (!authLoading && isAuthenticated) {
       loadAnimals();
     }
-
   }, [authLoading, isAuthenticated]);
 
   return (
-
     <AnimalsContext.Provider
       value={{
         animals,
@@ -88,16 +59,11 @@ export function AnimalsProvider({
         loadAnimals,
       }}
     >
-
       {children}
-
     </AnimalsContext.Provider>
   );
 }
 
 export function useAnimals() {
-
-  return useContext(
-    AnimalsContext
-  );
+  return useContext(AnimalsContext);
 }

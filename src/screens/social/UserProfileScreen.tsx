@@ -6,55 +6,31 @@ import {
   View,
 } from "react-native";
 
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 
-import Ionicons
-from "@expo/vector-icons/Ionicons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
-import {
-  getPostsByProfile,
-} from "../../services/postService";
+import { getPostsByProfile } from "../../services/postService";
 
-export default function ProfileScreen({
-  route,
-  navigation,
-}: any) {
+export default function ProfileScreen({ route, navigation }: any) {
+  const { profileId } = route.params;
 
-  const {
-    profileId,
-  } = route.params;
+  const [posts, setPosts] = useState<any[]>([]);
 
-  const [posts, setPosts] =
-    useState<any[]>([]);
-
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
 
   // =========================
   // LOAD POSTS
   // =========================
 
-  const loadPosts =
-    async () => {
-
+  const loadPosts = async () => {
     try {
-
-      const data =
-        await getPostsByProfile(
-          profileId
-        );
+      const data = await getPostsByProfile(profileId);
 
       setPosts(data);
-
     } catch (error) {
-
       console.log(error);
-
     } finally {
-
       setLoading(false);
     }
   };
@@ -64,112 +40,60 @@ export default function ProfileScreen({
   }, []);
 
   return (
-
-    <ScrollView
-      style={styles.container}
-      showsVerticalScrollIndicator={false}
-    >
-
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* HEADER */}
 
       <View style={styles.header}>
-
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() =>
-            navigation.goBack()
-          }
+          onPress={() => navigation.goBack()}
         >
-
-          <Ionicons
-            name="arrow-back"
-            size={24}
-            color="#111827"
-          />
-
+          <Ionicons name="arrow-back" size={24} color="#111827" />
         </TouchableOpacity>
 
         <View style={styles.avatar}>
-
-          <Ionicons
-            name="person"
-            size={42}
-            color="#9333ea"
-          />
-
+          <Ionicons name="person" size={42} color="#9333ea" />
         </View>
 
-        <Text style={styles.name}>
-          Usuario
-        </Text>
+        <Text style={styles.name}>Usuario</Text>
 
-        <Text style={styles.subtitle}>
-          Perfil ganadero
-        </Text>
+        <Text style={styles.subtitle}>Perfil ganadero</Text>
 
         <View style={styles.statsContainer}>
-
           <View style={styles.statBox}>
+            <Text style={styles.statNumber}>{posts.length}</Text>
 
-            <Text style={styles.statNumber}>
-              {posts.length}
-            </Text>
-
-            <Text style={styles.statLabel}>
-              Posts
-            </Text>
-
+            <Text style={styles.statLabel}>Posts</Text>
           </View>
-
         </View>
-
       </View>
 
       {/* POSTS */}
 
       <View style={styles.content}>
-
         {posts.map((post) => (
-
-          <View
-            key={post.id}
-            style={styles.postCard}
-          >
-
+          <View key={post.id} style={styles.postCard}>
             <Text style={styles.postDate}>
-
-              {
-                new Date(
-                  post.createdAt
-                ).toLocaleDateString()
-              }
-
+              {new Date(post.createdAt).toLocaleDateString()}
             </Text>
 
-            <Text style={styles.postContent}>
-              {post.content}
-            </Text>
-
+            <Text style={styles.postContent}>{post.content}</Text>
           </View>
         ))}
-
       </View>
 
       <View style={{ height: 40 }} />
-
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
     backgroundColor: "#f1f5f9",
   },
 
   header: {
-
     backgroundColor: "#9333ea",
 
     paddingTop: 70,
@@ -182,7 +106,6 @@ const styles = StyleSheet.create({
   },
 
   backButton: {
-
     position: "absolute",
 
     top: 70,
@@ -193,15 +116,13 @@ const styles = StyleSheet.create({
 
     borderRadius: 16,
 
-    backgroundColor:
-      "rgba(255,255,255,0.92)",
+    backgroundColor: "rgba(255,255,255,0.92)",
 
     justifyContent: "center",
     alignItems: "center",
   },
 
   avatar: {
-
     width: 110,
     height: 110,
 
@@ -228,16 +149,13 @@ const styles = StyleSheet.create({
   },
 
   statsContainer: {
-
     flexDirection: "row",
 
     marginTop: 28,
   },
 
   statBox: {
-
-    backgroundColor:
-      "rgba(255,255,255,0.15)",
+    backgroundColor: "rgba(255,255,255,0.15)",
 
     paddingVertical: 14,
     paddingHorizontal: 28,
@@ -264,7 +182,6 @@ const styles = StyleSheet.create({
   },
 
   postCard: {
-
     backgroundColor: "#fff",
 
     borderRadius: 28,

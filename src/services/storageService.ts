@@ -1,8 +1,8 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const KEYS = {
-  TOKEN: '@socialmilk/token',
-  USER: '@socialmilk/user',
+  TOKEN: "@socialmilk/token",
+  USER: "@socialmilk/user",
 } as const;
 
 export const storageService = {

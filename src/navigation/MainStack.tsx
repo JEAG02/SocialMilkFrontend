@@ -27,6 +27,8 @@ import EditHealthRecordScreen from "../screens/animals/EditHealthRecordScreen";
 import AnimalHealtEventsScreen from "../screens/animals/AnimalHealthEventsScreen";
 import EventDetailScreen from "../screens/animals/EventDetailScreen";
 import EventHistoryScreen from "../screens/animals/EventHistoryScreen";
+import MilkInventoryScreen from "../screens/dashboard/MilkInventoryScreen";
+import ImageViewerScreen from "../screens/social/ImageViewerScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -47,19 +49,43 @@ export default function MainStack() {
       <Stack.Screen name="AnimalDetails" component={AnimalDetailsScreen} />
       <Stack.Screen name="CreateAnimal" component={CreateAnimalScreen} />
       <Stack.Screen name="EditAnimal" component={EditAnimalScreen} />
-      <Stack.Screen name="ProductionDetail" component={productionDetailScreen} />
-      <Stack.Screen name="UpdateProduction" component={UpdateProductionScreen} />
+      <Stack.Screen
+        name="ProductionDetail"
+        component={productionDetailScreen}
+      />
+      <Stack.Screen
+        name="UpdateProduction"
+        component={UpdateProductionScreen}
+      />
       <Stack.Screen name="SaleDetail" component={salesDetailScreen} />
       <Stack.Screen name="UpdateSale" component={updateSaleScreen} />
       <Stack.Screen name="UserProfile" component={userProfileScreen} />
       <Stack.Screen name="PostDetail" component={postDetailScreen} />
-      <Stack.Screen name="AnimalHealthRecords" component={AnimalHealthRecordsScreen} />
-      <Stack.Screen name="AnimalHealthRecordForm" component={AnimalHealthRecordFormScreen} />
+      <Stack.Screen
+        name="AnimalHealthRecords"
+        component={AnimalHealthRecordsScreen}
+      />
+      <Stack.Screen
+        name="AnimalHealthRecordForm"
+        component={AnimalHealthRecordFormScreen}
+      />
       <Stack.Screen name="CreateHealthRecord" component={CreateHealthRecord} />
-      <Stack.Screen name="EditHealthRecord" component={EditHealthRecordScreen} />
-      <Stack.Screen name="AnimalHealthEvent" component={AnimalHealtEventsScreen} />
+      <Stack.Screen
+        name="EditHealthRecord"
+        component={EditHealthRecordScreen}
+      />
+      <Stack.Screen
+        name="AnimalHealthEvent"
+        component={AnimalHealtEventsScreen}
+      />
       <Stack.Screen name="EventDetail" component={EventDetailScreen} />
       <Stack.Screen name="EventHistory" component={EventHistoryScreen} />
+      <Stack.Screen name="MilkInventory" component={MilkInventoryScreen} />
+      <Stack.Screen
+        name="ImageViewer"
+        component={ImageViewerScreen}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 }

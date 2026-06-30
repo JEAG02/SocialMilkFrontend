@@ -16,14 +16,14 @@
       "supportsTablet": true
     },
     "android": {
-  "package": "com.socialmilk.app",
-  "adaptiveIcon": {
-    "foregroundImage": "./assets/adaptive-icon.png",
-    "backgroundColor": "#ffffff"
-  },
-  "edgeToEdgeEnabled": true,
-  "predictiveBackGestureEnabled": false
-},
+      "package": "com.socialmilk.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false
+    },
     "web": {
       "favicon": "./assets/favicon.png"
     },

@@ -1,54 +1,42 @@
 import * as ImagePicker from "expo-image-picker";
 
-const CLOUD_NAME =
-  "TU_CLOUD_NAME";
+const CLOUD_NAME = "dekvbrhxu";
 
-const UPLOAD_PRESET =
-  "socialmilk_unsigned";
+const UPLOAD_PRESET = "socialmilk_unsigned";
 
 export async function pickAndUploadImage() {
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    quality: 0.7,
+  });
 
-  const result =
-    await ImagePicker.launchImageLibraryAsync({
-      mediaTypes:
-        ImagePicker.MediaTypeOptions.Images,
-      quality: 0.7,
-    });
+  if (result.canceled) return null;
 
-  if (result.canceled)
-    return null;
+  const image = result.assets[0];
 
-  const image =
-    result.assets[0];
+  const data = new FormData();
 
-  const data =
-    new FormData();
+  data.append("file", {
+    uri: image.uri,
+    type: "image/jpeg",
+    name: "upload.jpg",
+  } as any);
 
-  data.append(
-    "file",
+  data.append("upload_preset", UPLOAD_PRESET);
+
+  const response = await fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
     {
-      uri: image.uri,
-      type: "image/jpeg",
-      name: "upload.jpg",
-    } as any
+      method: "POST",
+      body: data,
+    },
   );
 
-  data.append(
-    "upload_preset",
-    UPLOAD_PRESET
-  );
+  const json = await response.json();
 
-  const response =
-    await fetch(
-      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-      {
-        method: "POST",
-        body: data,
-      }
-    );
+  console.log("CLOUDINARY STATUS:", response.status);
 
-  const json =
-    await response.json();
+  console.log("CLOUDINARY RESPONSE:", json);
 
   return json.secure_url;
 }

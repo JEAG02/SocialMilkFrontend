@@ -1,23 +1,15 @@
 import { View, Text } from "react-native";
 
-import {
-  TouchableOpacity,
-} from "react-native";
+import { TouchableOpacity } from "react-native";
 
 import Ionicons from "@expo/vector-icons/Ionicons";
 
-import {
-  useNavigation,
-} from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 
-import {
-  useTasks,
-} from "../../context/TasksContext";
+import { useTasks } from "../../context/TasksContext";
 
 export default function HomeTasksPanel() {
-
-  const navigation: any =
-    useNavigation();
+  const navigation: any = useNavigation();
 
   const { tasks } = useTasks();
 
@@ -25,26 +17,13 @@ export default function HomeTasksPanel() {
   // CONTADORES
   // =========================
 
-  const pending =
-    tasks.filter(
-      (t) =>
-        t.status === 0
-    ).length;
+  const pending = tasks.filter((t) => t.status === 0).length;
 
-  const inProgress =
-    tasks.filter(
-      (t) =>
-        t.status === 1
-    ).length;
+  const inProgress = tasks.filter((t) => t.status === 1).length;
 
-  const completed =
-    tasks.filter(
-      (t) =>
-        t.status === 2
-    ).length;
+  const completed = tasks.filter((t) => t.status === 2).length;
 
   return (
-
     <View
       style={{
         backgroundColor: "#16a34a",
@@ -55,7 +34,6 @@ export default function HomeTasksPanel() {
         borderBottomRightRadius: 30,
       }}
     >
-
       {/* HEADER */}
 
       <View
@@ -66,7 +44,6 @@ export default function HomeTasksPanel() {
           marginBottom: 30,
         }}
       >
-
         <Text
           style={{
             color: "white",
@@ -77,12 +54,7 @@ export default function HomeTasksPanel() {
           Mi Producción
         </Text>
 
-        <Ionicons
-          name="grid-outline"
-          size={34}
-          color="white"
-        />
-
+        <Ionicons name="grid-outline" size={34} color="white" />
       </View>
 
       {/* CARD PENDIENTES */}
@@ -101,14 +73,12 @@ export default function HomeTasksPanel() {
           elevation: 3,
         }}
       >
-
         <View
           style={{
             flexDirection: "row",
             alignItems: "center",
           }}
         >
-
           <View
             style={{
               width: 60,
@@ -122,17 +92,10 @@ export default function HomeTasksPanel() {
               marginRight: 18,
             }}
           >
-
-            <Ionicons
-              name="clipboard-outline"
-              size={28}
-              color="white"
-            />
-
+            <Ionicons name="clipboard-outline" size={28} color="white" />
           </View>
 
           <View style={{ flex: 1 }}>
-
             <Text
               style={{
                 color: "#94a3b8",
@@ -156,9 +119,7 @@ export default function HomeTasksPanel() {
             >
               {pending}
             </Text>
-
           </View>
-
         </View>
 
         <TouchableOpacity
@@ -170,15 +131,11 @@ export default function HomeTasksPanel() {
             alignItems: "center",
           }}
           onPress={() =>
-            navigation.navigate(
-              "Tasks",
-              {
-                status: "PENDING",
-              }
-            )
+            navigation.navigate("Tasks", {
+              status: "PENDING",
+            })
           }
         >
-
           <Text
             style={{
               color: "#ef4444",
@@ -188,9 +145,7 @@ export default function HomeTasksPanel() {
           >
             Ver detalles
           </Text>
-
         </TouchableOpacity>
-
       </View>
 
       {/* CARD EN CURSO */}
@@ -209,14 +164,12 @@ export default function HomeTasksPanel() {
           elevation: 3,
         }}
       >
-
         <View
           style={{
             flexDirection: "row",
             alignItems: "center",
           }}
         >
-
           <View
             style={{
               width: 60,
@@ -230,17 +183,10 @@ export default function HomeTasksPanel() {
               marginRight: 18,
             }}
           >
-
-            <Ionicons
-              name="reload-circle-outline"
-              size={30}
-              color="white"
-            />
-
+            <Ionicons name="reload-circle-outline" size={30} color="white" />
           </View>
 
           <View style={{ flex: 1 }}>
-
             <Text
               style={{
                 color: "#94a3b8",
@@ -264,9 +210,7 @@ export default function HomeTasksPanel() {
             >
               {inProgress}
             </Text>
-
           </View>
-
         </View>
 
         <TouchableOpacity
@@ -278,15 +222,11 @@ export default function HomeTasksPanel() {
             alignItems: "center",
           }}
           onPress={() =>
-            navigation.navigate(
-              "Tasks",
-              {
-                status: "IN_PROGRESS",
-              }
-            )
+            navigation.navigate("Tasks", {
+              status: "IN_PROGRESS",
+            })
           }
         >
-
           <Text
             style={{
               color: "#ea580c",
@@ -296,9 +236,7 @@ export default function HomeTasksPanel() {
           >
             Ver detalles
           </Text>
-
         </TouchableOpacity>
-
       </View>
 
       {/* CARD COMPLETADAS */}
@@ -316,14 +254,12 @@ export default function HomeTasksPanel() {
           elevation: 3,
         }}
       >
-
         <View
           style={{
             flexDirection: "row",
             alignItems: "center",
           }}
         >
-
           <View
             style={{
               width: 60,
@@ -337,17 +273,14 @@ export default function HomeTasksPanel() {
               marginRight: 18,
             }}
           >
-
             <Ionicons
               name="checkmark-done-circle-outline"
               size={30}
               color="white"
             />
-
           </View>
 
           <View style={{ flex: 1 }}>
-
             <Text
               style={{
                 color: "#94a3b8",
@@ -371,9 +304,7 @@ export default function HomeTasksPanel() {
             >
               {completed}
             </Text>
-
           </View>
-
         </View>
 
         <TouchableOpacity
@@ -385,15 +316,11 @@ export default function HomeTasksPanel() {
             alignItems: "center",
           }}
           onPress={() =>
-            navigation.navigate(
-              "Tasks",
-              {
-                status: "COMPLETED",
-              }
-            )
+            navigation.navigate("Tasks", {
+              status: "COMPLETED",
+            })
           }
         >
-
           <Text
             style={{
               color: "#16a34a",
@@ -403,11 +330,8 @@ export default function HomeTasksPanel() {
           >
             Ver detalles
           </Text>
-
         </TouchableOpacity>
-
       </View>
-
     </View>
   );
 }

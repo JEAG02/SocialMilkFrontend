@@ -6,273 +6,183 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  ActivityIndicator,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 
-import {
-  useState,
-} from "react";
+import { useState } from "react";
 
-import AsyncStorage
-from "@react-native-async-storage/async-storage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import Ionicons
-from "@expo/vector-icons/Ionicons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
-import {
-  updateProduction,
-} from "../../services/productionService";
+import { updateProduction } from "../../services/productionService";
 
-import {
-  useAnimals,
-} from "../../context/AnimalsContext";
+import { useAnimals } from "../../context/AnimalsContext";
 
-export default function
-UpdateProductionScreen({
-  route,
-  navigation,
-}: any) {
-
+export default function UpdateProductionScreen({ route, navigation }: any) {
   // =========================
   // PARAMS
   // =========================
 
-  const {
-    production,
-  } = route.params;
+  const { production } = route.params;
 
   // =========================
   // STATES
   // =========================
 
-  const [saving, setSaving]
-    = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const [liters, setLiters]
-    = useState(
-      String(
-        production.milkVolumeLiters
-      )
-    );
+  const [liters, setLiters] = useState(String(production.milkVolumeLiters));
 
-  const [shift, setShift]
-    = useState(
-      production.shift
-    );
+  const [shift, setShift] = useState(production.shift);
 
-  const { animals } =
-    useAnimals();
+  const { animals } = useAnimals();
 
   // =========================
   // UPDATE
   // =========================
 
-  const handleUpdate =
-    async () => {
-
+  const handleUpdate = async () => {
     try {
-
-      if (
-        !liters ||
-        !shift.trim()
-      ) {
-
-        Alert.alert(
-          "Error",
-          "Completa todos los campos"
-        );
+      if (!liters || !shift.trim()) {
+        Alert.alert("Error", "Completa todos los campos");
 
         return;
       }
 
       setSaving(true);
 
-      const token =
-        await AsyncStorage.getItem(
-          "token"
-        );
+      const token = await AsyncStorage.getItem("token");
 
       if (!token) {
-
-        throw new Error(
-          "No existe token"
-        );
+        throw new Error("No existe token");
       }
 
-      await updateProduction(
-        production.productionId,
-        {
+      await updateProduction(production.productionId, {
+        animalId: production.animalId,
 
-          animalId:
-            production.animalId,
+        productionDate: production.productionDate,
 
-          productionDate:
-            production.productionDate,
+        milkVolumeLiters: Number(liters),
 
-          milkVolumeLiters:
-            Number(liters),
+        shift,
+      });
 
-          shift,
-        }
-      );
+      Alert.alert("Éxito", "Producción actualizada");
 
-      Alert.alert(
-        "Éxito",
-        "Producción actualizada"
-      );
-
-      navigation.navigate(
-        "Production"
-      );
-
+      navigation.navigate("Production");
     } catch (error) {
-
       console.log(error);
 
-      Alert.alert(
-        "Error",
-        "No se pudo actualizar"
-      );
-
+      Alert.alert("Error", "No se pudo actualizar");
     } finally {
-
       setSaving(false);
     }
   };
 
   return (
-
-    <ScrollView
-      style={styles.container}
-      showsVerticalScrollIndicator={false}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
+      <FlatList
+        data={[{ id: "page" }]}
+        keyExtractor={(item) => item.id}
+        keyboardShouldPersistTaps="handled"
+        renderItem={() => null}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingBottom: 40,
+        }}
+        ListHeaderComponent={
+          <>
+            {/* HEADER */}
 
-      {/* HEADER */}
+            <View style={styles.header}>
+              <TouchableOpacity
+                style={styles.backButton}
+                onPress={() => navigation.goBack()}
+              >
+                <Ionicons name="arrow-back" size={24} color="#111827" />
+              </TouchableOpacity>
 
-      <View style={styles.header}>
+              <Text style={styles.subtitle}>Modificar registro</Text>
 
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() =>
-            navigation.goBack()
-          }
-        >
+              <Text style={styles.title}>Editar Producción</Text>
+            </View>
 
-          <Ionicons
-            name="arrow-back"
-            size={24}
-            color="#111827"
-          />
+            {/* FORM */}
 
-        </TouchableOpacity>
+            <View style={styles.formCard}>
+              {/* ANIMAL */}
 
-        <Text style={styles.subtitle}>
-          Modificar registro
-        </Text>
+              <Text style={styles.label}>Animal</Text>
 
-        <Text style={styles.title}>
-          Editar Producción
-        </Text>
+              <View style={styles.infoBox}>
+                <Ionicons name="paw" size={20} color="#3b82f6" />
 
-      </View>
+                <Text style={styles.infoText}>
+                  {
+                    animals.find((a: any) => a.animalId === production.animalId)
+                      ?.animalName
+                  }
+                </Text>
+              </View>
 
-      {/* FORM */}
+              {/* LITROS */}
 
-      <View style={styles.formCard}>
+              <Text style={styles.label}>Litros producidos</Text>
 
-        {/* ANIMAL */}
+              <TextInput
+                value={liters}
+                onChangeText={setLiters}
+                keyboardType="numeric"
+                style={styles.input}
+              />
 
-        <Text style={styles.label}>
-          Animal
-        </Text>
+              {/* TURNO */}
 
-        <View style={styles.infoBox}>
+              <Text style={styles.label}>Turno</Text>
 
-          <Ionicons
-            name="paw"
-            size={20}
-            color="#3b82f6"
-          />
+              <TextInput
+                value={shift}
+                onChangeText={setShift}
+                style={styles.input}
+              />
 
-          <Text style={styles.infoText}>
+              {/* BUTTON */}
 
-            {
-              animals.find(
-                (a: any) =>
-                  a.animalId ===
-                  production.animalId
-              )?.animalName
-            }
+              <TouchableOpacity
+                style={styles.saveButton}
+                onPress={handleUpdate}
+                disabled={saving}
+              >
+                <Ionicons name="save-outline" size={20} color="#fff" />
 
-          </Text>
+                <Text style={styles.buttonText}>
+                  {saving ? "Actualizando..." : "Actualizar producción"}
+                </Text>
+              </TouchableOpacity>
+            </View>
 
-        </View>
-
-        {/* LITROS */}
-
-        <Text style={styles.label}>
-          Litros producidos
-        </Text>
-
-        <TextInput
-          value={liters}
-          onChangeText={setLiters}
-          keyboardType="numeric"
-          style={styles.input}
-        />
-
-        {/* TURNO */}
-
-        <Text style={styles.label}>
-          Turno
-        </Text>
-
-        <TextInput
-          value={shift}
-          onChangeText={setShift}
-          style={styles.input}
-        />
-
-        {/* BUTTON */}
-
-        <TouchableOpacity
-          style={styles.saveButton}
-          onPress={handleUpdate}
-          disabled={saving}
-        >
-
-          <Ionicons
-            name="save-outline"
-            size={20}
-            color="#fff"
-          />
-
-          <Text style={styles.buttonText}>
-            {
-              saving
-                ? "Actualizando..."
-                : "Actualizar producción"
-            }
-          </Text>
-
-        </TouchableOpacity>
-
-      </View>
-
-      <View style={{ height: 50 }} />
-
-    </ScrollView>
+            <View style={{ height: 50 }} />
+          </>
+        }
+      />
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
     backgroundColor: "#f1f5f9",
   },
 
   header: {
-
     backgroundColor: "#3b82f6",
 
     paddingTop: 70,
@@ -284,14 +194,12 @@ const styles = StyleSheet.create({
   },
 
   backButton: {
-
     width: 48,
     height: 48,
 
     borderRadius: 16,
 
-    backgroundColor:
-      "rgba(255,255,255,0.92)",
+    backgroundColor: "rgba(255,255,255,0.92)",
 
     justifyContent: "center",
     alignItems: "center",
@@ -312,7 +220,6 @@ const styles = StyleSheet.create({
   },
 
   formCard: {
-
     backgroundColor: "#fff",
 
     margin: 22,
@@ -335,7 +242,6 @@ const styles = StyleSheet.create({
   },
 
   input: {
-
     backgroundColor: "#f8fafc",
 
     borderRadius: 18,
@@ -352,7 +258,6 @@ const styles = StyleSheet.create({
   },
 
   infoBox: {
-
     backgroundColor: "#eff6ff",
 
     borderRadius: 18,
@@ -366,7 +271,6 @@ const styles = StyleSheet.create({
   },
 
   infoText: {
-
     marginLeft: 10,
 
     color: "#1e3a8a",
@@ -375,7 +279,6 @@ const styles = StyleSheet.create({
   },
 
   saveButton: {
-
     backgroundColor: "#3b82f6",
 
     paddingVertical: 18,

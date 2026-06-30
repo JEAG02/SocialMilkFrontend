@@ -24,5 +24,4 @@ export const useAuthService = () => {
   };
 
   return { login, loading, checkSession, logout };
-  
 };

@@ -8,105 +8,65 @@ import {
   Alert,
 } from "react-native";
 
-import {
-  useEffect,
-  useState,
-  useCallback,
-} from "react";
+import { useEffect, useState, useCallback } from "react";
 
-import AsyncStorage
-from "@react-native-async-storage/async-storage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import Ionicons
-from "@expo/vector-icons/Ionicons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
-import {
-  useFocusEffect,
-} from "@react-navigation/native";
+import { useFocusEffect } from "@react-navigation/native";
 
 import { API_CONFIG } from "../../config/api";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
-const API_URL =
-  `${API_CONFIG.BASE_URL}${API_CONFIG.SALES}`;
+const API_URL = `${API_CONFIG.BASE_URL}${API_CONFIG.SALES}`;
 
-export default function SalesScreen({
-  navigation,
-}: any) {
+export default function SalesScreen({ navigation }: any) {
+  const [client, setClient] = useState("");
 
-  const [client, setClient]
-    = useState("");
+  const [amount, setAmount] = useState("");
 
-  const [amount, setAmount]
-    = useState("");
+  const [liters, setLiters] = useState("");
 
-  const [liters, setLiters]
-    = useState("");
+  const [sales, setSales] = useState<any[]>([]);
 
-  const [sales, setSales]
-    = useState<any[]>([]);
+  const [period, setPeriod] = useState("daily");
 
-  const [period, setPeriod]
-    = useState("daily");
+  const [summary, setSummary] = useState<any[]>([]);
 
-  const [summary, setSummary]
-    = useState<any[]>([]);
-
-  const [loading, setLoading]
-    = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // =========================
   // LOAD SALES
   // =========================
 
-  const loadSales =
-    async () => {
-
+  const loadSales = async () => {
     try {
-
       setLoading(true);
 
-      const token =
-        await AsyncStorage.getItem(
-          "token"
-        );
+      const token = await AsyncStorage.getItem("token");
 
-      const response =
-        await fetch(
-          API_URL,
-          {
-            headers: {
-              Authorization:
-                `Bearer ${token}`,
-            },
-          }
-        );
+      const response = await fetch(API_URL, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (!response.ok) {
-
-        throw new Error(
-          "Error cargando ventas"
-        );
+        throw new Error("Error cargando ventas");
       }
 
-      const data =
-        await response.json();
+      const data = await response.json();
 
       setSales(data);
 
       // 🔥 cargar summary automáticamente
       if (data.length > 0) {
-
-        loadSummary(
-          data[0].buyerName,
-        );
+        loadSummary(data[0].buyerName);
       }
-
     } catch (error) {
-
       console.log(error);
-
     } finally {
-
       setLoading(false);
     }
   };
@@ -115,48 +75,29 @@ export default function SalesScreen({
   // LOAD SUMMARY
   // =========================
 
-  const loadSummary =
-    async (
-      buyerName: string
-    ) => {
-
+  const loadSummary = async (buyerName: string) => {
     try {
+      const token = await AsyncStorage.getItem("token");
 
-      const token =
-        await AsyncStorage.getItem(
-          "token"
-        );
-
-      const response =
-        await fetch(
-          `${API_URL}/summary?period=${period}&buyerName=${buyerName}`,
-          {
-            headers: {
-              Authorization:
-                `Bearer ${token}`,
-            },
-          }
-        );
-
-      if (!response.ok) {
-
-        throw new Error(
-          "Error cargando resumen"
-        );
-      }
-
-      const data =
-        await response.json();
-
-      console.log(
-        "SUMMARY DATA:",
-        data
+      const response = await fetch(
+        `${API_URL}/summary?period=${period}&buyerName=${buyerName}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
       );
 
+      if (!response.ok) {
+        throw new Error("Error cargando resumen");
+      }
+
+      const data = await response.json();
+
+      console.log("SUMMARY DATA:", data);
+
       setSummary(data);
-
     } catch (error) {
-
       console.log(error);
     }
   };
@@ -166,9 +107,7 @@ export default function SalesScreen({
   // =========================
 
   useEffect(() => {
-
     loadSales();
-
   }, []);
 
   // =========================
@@ -176,14 +115,9 @@ export default function SalesScreen({
   // =========================
 
   useEffect(() => {
-
     if (sales.length > 0) {
-
-      loadSummary(
-        sales[0].buyerName
-      );
+      loadSummary(sales[0].buyerName);
     }
-
   }, [period]);
 
   // =========================
@@ -192,89 +126,55 @@ export default function SalesScreen({
 
   useFocusEffect(
     useCallback(() => {
-
       loadSales();
-
-    }, [])
+    }, []),
   );
 
   // =========================
   // CREATE SALE
   // =========================
 
-  const handleCreate =
-    async () => {
-
+  const handleCreate = async () => {
     try {
-
-      if (
-        !client ||
-        !amount ||
-        !liters
-      ) {
-
-        Alert.alert(
-          "Error",
-          "Completa todos los campos"
-        );
+      if (!client || !amount || !liters) {
+        Alert.alert("Error", "Completa todos los campos");
 
         return;
       }
 
       setLoading(true);
 
-      const token =
-        await AsyncStorage.getItem(
-          "token"
-        );
+      const token = await AsyncStorage.getItem("token");
 
-      const response =
-        await fetch(
-          API_URL,
-          {
-            method: "POST",
+      const response = await fetch(API_URL, {
+        method: "POST",
 
-            headers: {
-              "Content-Type":
-                "application/json",
+        headers: {
+          "Content-Type": "application/json",
 
-              Authorization:
-                `Bearer ${token}`,
-            },
+          Authorization: `Bearer ${token}`,
+        },
 
-            body: JSON.stringify({
+        body: JSON.stringify({
+          saleDate: new Date().toISOString(),
 
-              saleDate:
-                new Date().toISOString(),
+          totalLitersSold: Number(liters),
 
-              totalLitersSold:
-                Number(liters),
+          totalAmount: Number(amount),
 
-              totalAmount:
-                Number(amount),
-
-              buyerName:
-                client,
-            }),
-          }
-        );
+          buyerName: client,
+        }),
+      });
 
       if (!response.ok) {
-
-        const error =
-          await response.text();
+        const error = await response.text();
 
         console.log(error);
 
-        throw new Error(
-          "Error creando venta"
-        );
+        throw new Error("Error creando venta");
       }
 
-      Alert.alert(
-        "Éxito",
-        "Venta registrada"
-      );
+      Alert.alert("Éxito", "Venta registrada");
 
       setClient("");
       setAmount("");
@@ -282,33 +182,27 @@ export default function SalesScreen({
 
       // 🔥 actualización inmediata
       await loadSales();
-
     } catch (error) {
-
       console.log(error);
 
       Alert.alert(
         "Error",
-        "No se pudo registrar"
+        "No se puede realizar la venta porque se supera la cantidad de leche disponible",
       );
-
     } finally {
-
       setLoading(false);
     }
   };
 
   return (
-
-    <ScrollView
-      style={styles.container}
+    <KeyboardAwareScrollView
+      enableOnAndroid
+      keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
     >
-
       {/* HEADER */}
 
       <View style={styles.header}>
-
         <View
           style={{
             flexDirection: "row",
@@ -316,59 +210,31 @@ export default function SalesScreen({
             flex: 1,
           }}
         >
-
           <TouchableOpacity
-            onPress={() =>
-              navigation.goBack()
-            }
+            onPress={() => navigation.goBack()}
             style={styles.backButton}
           >
-
-            <Ionicons
-              name="arrow-back"
-              size={24}
-              color="#111827"
-            />
-
+            <Ionicons name="arrow-back" size={24} color="#111827" />
           </TouchableOpacity>
 
           <View>
+            <Text style={styles.subtitle}>Registro comercial</Text>
 
-            <Text style={styles.subtitle}>
-              Registro comercial
-            </Text>
-
-            <Text style={styles.title}>
-              Ventas
-            </Text>
-
+            <Text style={styles.title}>Ventas</Text>
           </View>
-
         </View>
 
         <View style={styles.headerIcon}>
-
-          <Ionicons
-            name="cash-outline"
-            size={28}
-            color="#fff"
-          />
-
+          <Ionicons name="cash-outline" size={28} color="#fff" />
         </View>
-
       </View>
 
       {/* FORM */}
 
       <View style={styles.formCard}>
+        <Text style={styles.sectionTitle}>Nueva Venta</Text>
 
-        <Text style={styles.sectionTitle}>
-          Nueva Venta
-        </Text>
-
-        <Text style={styles.label}>
-          Cliente
-        </Text>
+        <Text style={styles.label}>Cliente</Text>
 
         <TextInput
           placeholder="Nombre del cliente"
@@ -378,9 +244,7 @@ export default function SalesScreen({
           style={styles.input}
         />
 
-        <Text style={styles.label}>
-          Valor de venta
-        </Text>
+        <Text style={styles.label}>Valor de venta</Text>
 
         <TextInput
           placeholder="Ej: 450000"
@@ -391,9 +255,7 @@ export default function SalesScreen({
           style={styles.input}
         />
 
-        <Text style={styles.label}>
-          Litros vendidos
-        </Text>
+        <Text style={styles.label}>Litros vendidos</Text>
 
         <TextInput
           placeholder="Ej: 420"
@@ -409,32 +271,18 @@ export default function SalesScreen({
           onPress={handleCreate}
           disabled={loading}
         >
-
-          <Ionicons
-            name="save-outline"
-            size={20}
-            color="#fff"
-          />
+          <Ionicons name="save-outline" size={20} color="#fff" />
 
           <Text style={styles.buttonText}>
-            {
-              loading
-                ? "Guardando..."
-                : "Guardar venta"
-            }
+            {loading ? "Guardando..." : "Guardar venta"}
           </Text>
-
         </TouchableOpacity>
-
       </View>
 
       {/* SUMMARY */}
 
       <View style={styles.summaryCard}>
-
-        <Text style={styles.historyTitle}>
-          Resumen de Ventas
-        </Text>
+        <Text style={styles.historyTitle}>Resumen de Ventas</Text>
 
         {/* PERIODOS */}
 
@@ -444,52 +292,35 @@ export default function SalesScreen({
             marginBottom: 20,
           }}
         >
-
-          {[
-            "daily",
-            "weekly",
-            "monthly",
-          ].map((item) => (
-
+          {["daily", "weekly", "monthly"].map((item) => (
             <TouchableOpacity
               key={item}
-              onPress={() =>
-                setPeriod(item)
-              }
+              onPress={() => setPeriod(item)}
               style={[
                 styles.periodButton,
 
                 period === item && {
-                  backgroundColor:
-                    "#16a34a",
+                  backgroundColor: "#16a34a",
                 },
               ]}
             >
-
               <Text
                 style={{
-                  color:
-                    period === item
-                      ? "#fff"
-                      : "#16a34a",
+                  color: period === item ? "#fff" : "#16a34a",
 
                   fontWeight: "800",
                 }}
               >
                 {item}
               </Text>
-
             </TouchableOpacity>
           ))}
-
         </View>
 
         {/* DATA */}
 
         {summary.length > 0 ? (
-
           summary.map((item: any) => (
-
             <View
               key={item.saleId}
               style={{
@@ -499,30 +330,16 @@ export default function SalesScreen({
                 borderBottomColor: "#e2e8f0",
               }}
             >
+              <Text style={styles.summaryText}>Cliente: {item.buyerName}</Text>
 
               <Text style={styles.summaryText}>
-                Cliente:
-                {" "}
-                {item.buyerName}
+                Litros: {item.totalLitersSold} L
               </Text>
 
-              <Text style={styles.summaryText}>
-                Litros:
-                {" "}
-                {item.totalLitersSold} L
-              </Text>
-
-              <Text style={styles.summaryText}>
-                Total:
-                {" "}
-                ${item.totalAmount}
-              </Text>
-
+              <Text style={styles.summaryText}>Total: ${item.totalAmount}</Text>
             </View>
           ))
-
         ) : (
-
           <Text
             style={{
               color: "#64748b",
@@ -532,81 +349,50 @@ export default function SalesScreen({
             No hay ventas en este período
           </Text>
         )}
-
       </View>
 
       {/* HISTORIAL */}
 
       <View style={styles.historyContainer}>
-
-        <Text style={styles.historyTitle}>
-          Ventas recientes
-        </Text>
+        <Text style={styles.historyTitle}>Ventas recientes</Text>
 
         {sales.map((item) => (
-
           <TouchableOpacity
             key={item.saleId}
             style={styles.saleCard}
             onPress={() =>
-              navigation.navigate(
-                "SaleDetail",
-                {
-                  saleId:
-                    item.saleId,
-                }
-              )
+              navigation.navigate("SaleDetail", {
+                saleId: item.saleId,
+              })
             }
           >
-
             <View style={styles.saleIcon}>
-
-              <Ionicons
-                name="wallet-outline"
-                size={26}
-                color="#16a34a"
-              />
-
+              <Ionicons name="wallet-outline" size={26} color="#16a34a" />
             </View>
 
             <View style={{ flex: 1 }}>
+              <Text style={styles.saleAmount}>${item.totalAmount}</Text>
 
-              <Text style={styles.saleAmount}>
-                ${item.totalAmount}
-              </Text>
+              <Text style={styles.saleClient}>{item.buyerName}</Text>
 
-              <Text style={styles.saleClient}>
-                {item.buyerName}
-              </Text>
-
-              <Text style={styles.saleLiters}>
-                {
-                  item.totalLitersSold
-                } L
-              </Text>
-
+              <Text style={styles.saleLiters}>{item.totalLitersSold} L</Text>
             </View>
-
           </TouchableOpacity>
         ))}
-
       </View>
 
       <View style={{ height: 50 }} />
-
-    </ScrollView>
+    </KeyboardAwareScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
     backgroundColor: "#f1f5f9",
   },
 
   header: {
-
     backgroundColor: "#16a34a",
 
     paddingTop: 70,
@@ -622,14 +408,12 @@ const styles = StyleSheet.create({
   },
 
   backButton: {
-
     width: 48,
     height: 48,
 
     borderRadius: 16,
 
-    backgroundColor:
-      "rgba(255,255,255,0.92)",
+    backgroundColor: "rgba(255,255,255,0.92)",
 
     justifyContent: "center",
     alignItems: "center",
@@ -650,21 +434,18 @@ const styles = StyleSheet.create({
   },
 
   headerIcon: {
-
     width: 60,
     height: 60,
 
     borderRadius: 20,
 
-    backgroundColor:
-      "rgba(255,255,255,0.18)",
+    backgroundColor: "rgba(255,255,255,0.18)",
 
     justifyContent: "center",
     alignItems: "center",
   },
 
   formCard: {
-
     backgroundColor: "#fff",
 
     margin: 22,
@@ -680,7 +461,6 @@ const styles = StyleSheet.create({
   },
 
   summaryCard: {
-
     backgroundColor: "#fff",
 
     marginHorizontal: 22,
@@ -706,7 +486,6 @@ const styles = StyleSheet.create({
   },
 
   input: {
-
     backgroundColor: "#f8fafc",
 
     borderRadius: 18,
@@ -723,7 +502,6 @@ const styles = StyleSheet.create({
   },
 
   saveButton: {
-
     backgroundColor: "#16a34a",
 
     paddingVertical: 18,
@@ -755,7 +533,6 @@ const styles = StyleSheet.create({
   },
 
   saleCard: {
-
     backgroundColor: "#fff",
 
     borderRadius: 24,
@@ -775,7 +552,6 @@ const styles = StyleSheet.create({
   },
 
   saleIcon: {
-
     width: 58,
     height: 58,
 
@@ -808,7 +584,6 @@ const styles = StyleSheet.create({
   },
 
   periodButton: {
-
     borderWidth: 2,
     borderColor: "#16a34a",
 
@@ -821,7 +596,6 @@ const styles = StyleSheet.create({
   },
 
   summaryText: {
-
     fontSize: 16,
 
     fontWeight: "700",

@@ -1,30 +1,27 @@
 export const API_CONFIG = {
+  BASE_URL: "http://192.168.170.35:5264/api/v1",
 
-  BASE_URL:
-    "http://192.168.60.77:5264/api/v1",
+  ANIMALS: "/animals",
 
-  ANIMALS:
-    "/animals",
+  AUTH: "/auth",
 
-    AUTH:
-    "/auth",
+  POSTS: "/posts",
 
-  POSTS:
-    "/posts",
+  PROFILES: "/profiles",
 
-  PROFILES:
-    "/profiles",
+  PRODUCTION: "/production",
 
-  PRODUCTION:
-    "/production",
+  SALES: "/sales",
 
-  SALES:
-    "/sales",
+  TASKS: "/tasks",
 
-  TASKS:
-    "/tasks",
+  AI: "/ai/interactions",
 
-  AI:
-    "/ai/interactions",
+  INVENTORY: "/inventory/milk",
 
+  POST_MEDIA: "/posts/{postId}/media/upload",
+
+  GET_POST_MEDIA: "/posts/{postId}/media",
+
+  DELETE_PERFIL_MEDIA: "/auth/profiles/me/avatar",
 };

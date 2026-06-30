@@ -1,328 +1,213 @@
 import {
   ActivityIndicator,
   Alert,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 
-import Ionicons
-from "@expo/vector-icons/Ionicons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
-import AsyncStorage
-from "@react-native-async-storage/async-storage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import {
-  updateSale,
-} from "../../services/salesService";
+import { updateSale } from "../../services/salesService";
 
 import { API_CONFIG } from "../../config/api";
 
-const API_URL =
-  `${API_CONFIG.BASE_URL}${API_CONFIG.SALES}`;
+const API_URL = `${API_CONFIG.BASE_URL}${API_CONFIG.SALES}`;
 
-export default function
-UpdateSaleScreen({
-  route,
-  navigation,
-}: any) {
+export default function UpdateSaleScreen({ route, navigation }: any) {
+  const { saleId } = route.params;
 
-  const {
-    saleId,
-  } = route.params;
+  const [loading, setLoading] = useState(true);
 
-  const [loading, setLoading]
-    = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  const [saving, setSaving]
-    = useState(false);
+  const [sale, setSale] = useState<any>(null);
 
-  const [sale, setSale]
-    = useState<any>(null);
+  const [buyerName, setBuyerName] = useState("");
 
-  const [buyerName, setBuyerName]
-    = useState("");
+  const [totalAmount, setTotalAmount] = useState("");
 
-  const [totalAmount, setTotalAmount]
-    = useState("");
-
-  const [
-    totalLitersSold,
-    setTotalLitersSold,
-  ] = useState("");
+  const [totalLitersSold, setTotalLitersSold] = useState("");
 
   // =========================
   // LOAD DETAIL
   // =========================
 
-  const loadSale =
-    async () => {
-
+  const loadSale = async () => {
     try {
+      const token = await AsyncStorage.getItem("token");
 
-      const token =
-        await AsyncStorage.getItem(
-          "token"
-        );
-
-      const response =
-        await fetch(
-          `${API_URL}/${saleId}`,
-          {
-            headers: {
-              Authorization:
-                `Bearer ${token}`,
-            },
-          }
-        );
+      const response = await fetch(`${API_URL}/${saleId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (!response.ok) {
-
-        throw new Error(
-          "Error cargando venta"
-        );
+        throw new Error("Error cargando venta");
       }
 
-      const data =
-        await response.json();
+      const data = await response.json();
 
       setSale(data);
 
-      setBuyerName(
-        data.buyerName
-      );
+      setBuyerName(data.buyerName);
 
-      setTotalAmount(
-        String(data.totalAmount)
-      );
+      setTotalAmount(String(data.totalAmount));
 
-      setTotalLitersSold(
-        String(
-          data.totalLitersSold
-        )
-      );
-
+      setTotalLitersSold(String(data.totalLitersSold));
     } catch (error) {
-
       console.log(error);
-
     } finally {
-
       setLoading(false);
     }
   };
 
   useEffect(() => {
-
     loadSale();
-
   }, []);
 
   // =========================
   // UPDATE
   // =========================
 
-  const handleUpdate =
-    async () => {
-
+  const handleUpdate = async () => {
     try {
-
-      if (
-        !buyerName ||
-        !totalAmount ||
-        !totalLitersSold
-      ) {
-
-        Alert.alert(
-          "Error",
-          "Completa todos los campos"
-        );
+      if (!buyerName || !totalAmount || !totalLitersSold) {
+        Alert.alert("Error", "Completa todos los campos");
 
         return;
       }
 
       setSaving(true);
 
-      await updateSale(
-        saleId,
-        {
-          saleDate:
-            sale.saleDate,
+      await updateSale(saleId, {
+        saleDate: sale.saleDate,
 
-          buyerName,
+        buyerName,
 
-          totalAmount:
-            Number(totalAmount),
+        totalAmount: Number(totalAmount),
 
-          totalLitersSold:
-            Number(
-              totalLitersSold
-            ),
-        }
-      );
+        totalLitersSold: Number(totalLitersSold),
+      });
 
-      Alert.alert(
-        "Éxito",
-        "Venta actualizada"
-      );
+      Alert.alert("Éxito", "Venta actualizada");
 
-      navigation.navigate(
-  "Sales",
-  {
-    refresh: true,
-  }
-);
-
+      navigation.navigate("Sales", {
+        refresh: true,
+      });
     } catch (error) {
-
       console.log(error);
 
-      Alert.alert(
-        "Error",
-        "No se pudo actualizar"
-      );
-
+      Alert.alert("Error", "No se pudo actualizar");
     } finally {
-
       setSaving(false);
     }
   };
 
   if (loading) {
-
     return (
-
       <View style={styles.loader}>
-
-        <ActivityIndicator
-          size="large"
-          color="#16a34a"
-        />
-
+        <ActivityIndicator size="large" color="#16a34a" />
       </View>
     );
   }
 
   return (
-
-    <ScrollView
-      style={styles.container}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
+      <FlatList
+        data={[{ id: "page" }]}
+        keyExtractor={(item) => item.id}
+        keyboardShouldPersistTaps="handled"
+        renderItem={() => null}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingBottom: 40,
+        }}
+        ListHeaderComponent={
+          <>
+            {/* HEADER */}
 
-      {/* HEADER */}
+            <View style={styles.header}>
+              <TouchableOpacity
+                style={styles.backButton}
+                onPress={() => navigation.goBack()}
+              >
+                <Ionicons name="arrow-back" size={24} color="#111827" />
+              </TouchableOpacity>
 
-      <View style={styles.header}>
+              <Text style={styles.title}>Editar Venta</Text>
+            </View>
 
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() =>
-            navigation.goBack()
-          }
-        >
+            {/* FORM */}
 
-          <Ionicons
-            name="arrow-back"
-            size={24}
-            color="#111827"
-          />
+            <View style={styles.form}>
+              <Text style={styles.label}>Cliente</Text>
 
-        </TouchableOpacity>
+              <TextInput
+                value={buyerName}
+                onChangeText={setBuyerName}
+                style={styles.input}
+              />
 
-        <Text style={styles.title}>
-          Editar Venta
-        </Text>
+              <Text style={styles.label}>Valor total</Text>
 
-      </View>
+              <TextInput
+                value={totalAmount}
+                onChangeText={setTotalAmount}
+                keyboardType="numeric"
+                style={styles.input}
+              />
 
-      {/* FORM */}
+              <Text style={styles.label}>Litros vendidos</Text>
 
-      <View style={styles.form}>
+              <TextInput
+                value={totalLitersSold}
+                onChangeText={setTotalLitersSold}
+                keyboardType="numeric"
+                style={styles.input}
+              />
 
-        <Text style={styles.label}>
-          Cliente
-        </Text>
+              <TouchableOpacity
+                style={styles.button}
+                onPress={handleUpdate}
+                disabled={saving}
+              >
+                <Ionicons name="save-outline" size={20} color="#fff" />
 
-        <TextInput
-          value={buyerName}
-          onChangeText={
-            setBuyerName
-          }
-          style={styles.input}
-        />
+                <Text style={styles.buttonText}>
+                  {saving ? "Guardando..." : "Actualizar"}
+                </Text>
+              </TouchableOpacity>
+            </View>
 
-        <Text style={styles.label}>
-          Valor total
-        </Text>
-
-        <TextInput
-          value={totalAmount}
-          onChangeText={
-            setTotalAmount
-          }
-          keyboardType="numeric"
-          style={styles.input}
-        />
-
-        <Text style={styles.label}>
-          Litros vendidos
-        </Text>
-
-        <TextInput
-          value={totalLitersSold}
-          onChangeText={
-            setTotalLitersSold
-          }
-          keyboardType="numeric"
-          style={styles.input}
-        />
-
-        <TouchableOpacity
-          style={styles.button}
-          onPress={handleUpdate}
-          disabled={saving}
-        >
-
-          <Ionicons
-            name="save-outline"
-            size={20}
-            color="#fff"
-          />
-
-          <Text style={styles.buttonText}>
-            {
-              saving
-                ? "Guardando..."
-                : "Actualizar"
-            }
-          </Text>
-
-        </TouchableOpacity>
-
-      </View>
-
-      <View style={{ height: 50 }} />
-
-    </ScrollView>
+            <View style={{ height: 50 }} />
+          </>
+        }
+      />
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
     backgroundColor: "#f1f5f9",
   },
 
   loader: {
-
     flex: 1,
 
     justifyContent: "center",
@@ -330,7 +215,6 @@ const styles = StyleSheet.create({
   },
 
   header: {
-
     paddingTop: 70,
     paddingHorizontal: 24,
     paddingBottom: 30,
@@ -342,7 +226,6 @@ const styles = StyleSheet.create({
   },
 
   backButton: {
-
     width: 48,
     height: 48,
 
@@ -357,7 +240,6 @@ const styles = StyleSheet.create({
   },
 
   title: {
-
     fontSize: 32,
 
     fontWeight: "900",
@@ -370,7 +252,6 @@ const styles = StyleSheet.create({
   },
 
   label: {
-
     fontSize: 15,
 
     fontWeight: "700",
@@ -381,7 +262,6 @@ const styles = StyleSheet.create({
   },
 
   input: {
-
     backgroundColor: "#fff",
 
     borderRadius: 18,
@@ -395,7 +275,6 @@ const styles = StyleSheet.create({
   },
 
   button: {
-
     backgroundColor: "#16a34a",
 
     paddingVertical: 18,
@@ -409,7 +288,6 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-
     color: "#fff",
 
     fontWeight: "800",

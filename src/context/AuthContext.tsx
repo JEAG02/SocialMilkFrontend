@@ -1,30 +1,17 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
-import AsyncStorage
-from "@react-native-async-storage/async-storage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const AuthContext =
-  createContext<any>(null);
+import { registerLogout } from "../services/authEvents";
 
-export function AuthProvider({
-  children,
-}: any) {
+const AuthContext = createContext<any>(null);
 
-  const [user, setUser] =
-    useState<any>(null);
+export function AuthProvider({ children }: any) {
+  const [user, setUser] = useState<any>(null);
 
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const [
-    isAuthenticated,
-    setIsAuthenticated,
-  ] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // =========================
   // RESTORE SESSION
@@ -32,43 +19,25 @@ export function AuthProvider({
 
   useEffect(() => {
     restoreSession();
+    registerLogout(logout);
   }, []);
 
-  const restoreSession =
-    async () => {
-
+  const restoreSession = async () => {
     try {
+      const token = await AsyncStorage.getItem("token");
 
-      const token =
-        await AsyncStorage.getItem(
-          "token"
-        );
-
-      const storedUser =
-        await AsyncStorage.getItem(
-          "user"
-        );
+      const storedUser = await AsyncStorage.getItem("user");
 
       if (token) {
-
         setIsAuthenticated(true);
 
         if (storedUser) {
-
-          setUser(
-            JSON.parse(
-              storedUser
-            )
-          );
+          setUser(JSON.parse(storedUser));
         }
       }
-
     } catch (error) {
-
       console.log(error);
-
     } finally {
-
       setLoading(false);
     }
   };
@@ -77,28 +46,17 @@ export function AuthProvider({
   // LOGIN
   // =========================
 
-  const login = async (
-    data: any
-  ) => {
-
-    console.log(
-      "LOGIN RESPONSE:"
-    );
+  const login = async (data: any) => {
+    console.log("LOGIN RESPONSE:");
 
     console.log(data);
 
     // TOKEN
 
-    const token =
-      data.token ||
-      data.accessToken ||
-      data.jwt;
+    const token = data.token || data.accessToken || data.jwt;
 
     if (!token) {
-
-      throw new Error(
-        "El backend no devolvió token"
-      );
+      throw new Error("El backend no devolvió token");
     }
 
     // PROFILE ID
@@ -107,46 +65,28 @@ export function AuthProvider({
 
     // SAVE TOKEN
 
-    await AsyncStorage.setItem(
-      "token",
-      token
-    );
+    await AsyncStorage.setItem("token", token);
 
-    console.log(
-      "[AuthContext] Token saved:",
-      token.substring(0, 20) + "..."
-    );
+    console.log("[AuthContext] Token saved:", token.substring(0, 20) + "...");
 
     // USER DATA
 
     const userData = {
-  profileId:
-    data.profileId ||
-    data.id ||
-    data.userId ||
-    "",
+      profileId: data.profileId || data.id || data.userId || "",
 
-  email:
-    data.email || "",
+      email: data.email || "",
 
-  fullName:
-    data.fullName || "",
-};
+      fullName: data.fullName || "",
+    };
     // SAVE USER
 
-    await AsyncStorage.setItem(
-      "user",
-      JSON.stringify(userData)
-    );
+    await AsyncStorage.setItem("user", JSON.stringify(userData));
 
     setUser(userData);
 
     setIsAuthenticated(true);
 
-    console.log(
-      "AUTH:",
-      true
-    );
+    console.log("AUTH:", true);
   };
 
   // =========================
@@ -154,14 +94,9 @@ export function AuthProvider({
   // =========================
 
   const logout = async () => {
+    await AsyncStorage.removeItem("token");
 
-    await AsyncStorage.removeItem(
-      "token"
-    );
-
-    await AsyncStorage.removeItem(
-      "user"
-    );
+    await AsyncStorage.removeItem("user");
 
     setUser(null);
 
@@ -169,7 +104,6 @@ export function AuthProvider({
   };
 
   return (
-
     <AuthContext.Provider
       value={{
         user,
@@ -179,12 +113,9 @@ export function AuthProvider({
         isAuthenticated,
       }}
     >
-
       {children}
-
     </AuthContext.Provider>
   );
 }
 
-export const useAuth = () =>
-  useContext(AuthContext);
+export const useAuth = () => useContext(AuthContext);
